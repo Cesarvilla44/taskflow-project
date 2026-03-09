@@ -48,17 +48,17 @@ main {
 }
 
 
-.task-card {
+.task-card{
     display: flex;
     justify-content: space-between;
     align-items: center;
 
-    background: var(--color-card);
-    padding: var(--spacing);
+    background: white;
+    padding: 16px;
     margin-bottom: 10px;
     border-radius: 8px;
 
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 
@@ -66,7 +66,6 @@ main {
     transform: translateY(-3px);
     box-shadow: 0 5px 12px rgba(0,0,0,0.15);
 }
-
 
 .priority {
     padding: 4px 10px;
