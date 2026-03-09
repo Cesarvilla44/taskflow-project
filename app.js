@@ -1,4 +1,4 @@
-// Referencias al DOM
+
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const tasksContainer = document.getElementById('tasks-container');
@@ -6,7 +6,7 @@ const searchInput = document.getElementById('search-input');
 
 let tasks = [];
 
-// Cargar tareas guardadas al iniciar la app
+
 window.addEventListener('DOMContentLoaded', () => {
   const storedTasks = JSON.parse(localStorage.getItem('tasks'));
   if (storedTasks) {
@@ -15,7 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Función para renderizar las tareas
+
 function renderTasks(filter = '') {
   tasksContainer.innerHTML = '';
 
@@ -35,7 +35,7 @@ function renderTasks(filter = '') {
       tasksContainer.appendChild(taskDiv);
     });
 
-  // Añadir eventos a botones de borrar
+
   document.querySelectorAll('.delete-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const idx = e.target.getAttribute('data-index');
@@ -46,12 +46,12 @@ function renderTasks(filter = '') {
   });
 }
 
-// Guardar tareas en LocalStorage
+
 function saveTasks() {
   localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
-// Añadir nueva tarea
+
 taskForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const taskText = taskInput.value.trim();
@@ -59,8 +59,8 @@ taskForm.addEventListener('submit', (e) => {
 
   tasks.push({
     text: taskText,
-    category: 'General',  // Puedes hacer que el usuario elija categoría si quieres
-    priority: 'Media'     // Valor por defecto
+    category: 'General',  
+    priority: 'Media'     
   });
 
   saveTasks();
@@ -68,7 +68,7 @@ taskForm.addEventListener('submit', (e) => {
   taskInput.value = '';
 });
 
-// Filtro de búsqueda en tiempo real (bonus)
+
 searchInput.addEventListener('input', (e) => {
   renderTasks(e.target.value);
 });
