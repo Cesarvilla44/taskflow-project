@@ -4,14 +4,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "tailwind": "tailwindcss -i ./style.css -o ./output.css --watch"
   },
-  "dependencies": {
-    "@tailwindcss/postcss": "^4.2.1",
-    "postcss": "^8.5.8",
-    "tailwindcss": "^4.2.1"
+  "devDependencies": {
+    "tailwindcss": "^3.4.1",
+    "postcss": "^8.4.35",
+    "autoprefixer": "^10.4.17",
+    "vite": "^5.1.4"
   }
 }
-
-
