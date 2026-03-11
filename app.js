@@ -21,7 +21,7 @@ function applyTheme(isDark) {
     // Aplica la clase de tema al <html>
     html.classList.toggle('dark', isDark);
 
-    // Actualiza icono y texto del botón si existen
+    // Actualiza icono y texto del botón si existen y es poisble
     if (themeIcon && themeLabel) {
         if (isDark) {
             themeIcon.textContent = '☀️';
