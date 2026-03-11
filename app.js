@@ -26,11 +26,11 @@ function applyTheme(isDark) {
         if (isDark) {
             themeIcon.textContent = '☀️';
             themeIcon.classList.remove('text-white');
-            themeLabel.textContent = 'claro';
+            themeLabel.textContent = 'Claro';
         } else {
             themeIcon.textContent = '🌙';
             themeIcon.classList.add('text-white');
-            themeLabel.textContent = 'oscuro';
+            themeLabel.textContent = 'Oscuro';
         }
     }
 
