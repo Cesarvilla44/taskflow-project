@@ -99,5 +99,7 @@ Elijo un conector (GitHub, Notion, Postgres, etc.).
 Pulso “Add to Cursor” y sigue los pasos (auth, tokens, etc.).
 Cursor me genera y mantiene la config MCP.
 
+El asistente de IA de Cursor no se limita a generar texto; gracias al Model Context Protocol (MCP) puede conectarse a herramientas y datos reales del entorno del desarrollador. MCP actúa como un puente entre el modelo y servicios externos, como repositorios de código, bases de datos, sistemas de tickets o documentación interna. De esta manera, el asistente no solo “imagina” soluciones en abstracto, sino que es capaz de leer archivos concretos, buscar funciones específicas, consultar APIs internas o abrir issues en GitHub con información precisa del proyecto.
 
-
+Esto permite una comunicación mucho más rapida de Cursor con el repositorio en tiempo real y 
+solventar problemas mucho más rápido, así como facilitar la migración de proyectos.
