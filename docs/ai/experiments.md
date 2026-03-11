@@ -1,0 +1,1 @@
+Recopilaré los prompts que mejor resultado me han dado, analizando cómo la estructura, el contexto y las instrucciones específicas influyen en la precisión de las respuestas de la IA.

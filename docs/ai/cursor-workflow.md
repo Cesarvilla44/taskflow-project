@@ -1,0 +1,1 @@
+Aquí documento mi flujo de trabajo utilizando las herramientas de IA integradas en Cursor, como el chat contextual, el autocompletado y la generación de código en línea, aplicadas al proyecto TaskFlow.

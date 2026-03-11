@@ -61,15 +61,8 @@
 
         if (btn) {
             btn.addEventListener('click', () => {
-                
-                html.classList.toggle('dark');
-                
-                
-                if (html.classList.contains('dark')) {
-                    btn.innerText = 'Modo Claro';
-                } else {
-                    btn.innerText = 'Modo Oscuro';
-                }
+                const isDark = html.classList.toggle('dark');
+                btn.innerText = isDark ? 'Modo Claro' : 'Modo Oscuro';
             });
         }
     </script>

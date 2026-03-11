@@ -1,0 +1,1 @@
+Anotaré experimentos específicos realizados fuera de la comparativa estándar, como peticiones de refactorización compleja, creación de tests unitarios o resolución de problemas de arquitectura.
