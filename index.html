@@ -12,7 +12,8 @@
         <h1 class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">Flujo de Tareas</h1>
         
         <button id="theme-toggle" class="px-5 py-2 rounded-full bg-slate-800 text-white dark:bg-white dark:text-slate-900 font-bold shadow-md hover:scale-105 transition-all active:scale-95">
-            Modo Oscuro
+            <span id="theme-icon" class="mr-2 text-white">🌙</span>
+            <span id="theme-label">oscuro</span>
         </button>
     </header>
 
@@ -53,19 +54,7 @@
             </div>
         </section>
     </main>
-<script src="app.js"></script>
-
-    <script>
-        const btn = document.getElementById('theme-toggle');
-        const html = document.documentElement;
-
-        if (btn) {
-            btn.addEventListener('click', () => {
-                const isDark = html.classList.toggle('dark');
-                btn.innerText = isDark ? 'Modo Claro' : 'Modo Oscuro';
-            });
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
 
