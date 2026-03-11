@@ -44,3 +44,60 @@ Función refactorizada
 
 Además, cursor tiene atajos muy interesantes como Ctrl + L para desplegar el chat y hablar con el y
 Ctrl + K para abrir la paleta de comandos.
+
+Pasos básicos para configurar MCP en Cursor.
+
+1. Decidir dónde quiero la config
+Global (para todos los proyectos):
+~/.cursor/mcp.json
+Si no existe la carpeta .cursor en tu repo, la creas.
+
+2. Crear el archivo mcp.json
+Ejemplo mínimo para un servidor MCP local (por stdio):
+
+{
+  "mcpServers": {
+    "mi-servidor-local": {
+      "command": "node",
+      "args": ["path/al/servidor-mcp.js"],
+      "env": {
+        "API_KEY": "tu-api-key"
+      }
+    }
+  }
+}
+Ejemplo para un servidor remoto (HTTP/SSE):
+
+{
+  "mcpServers": {
+    "mi-servicio-remoto": {
+      "url": "https://mcp.ejemplo.com/sse",
+      "headers": {
+        "Authorization": "Bearer TU_TOKEN"
+      }
+    }
+  }
+}
+"mi-servidor-local" / "mi-servicio-remoto" es el nombre interno del conector.
+command + args lanzan el proceso MCP local.
+url + headers conectan a un MCP remoto.
+3. Reinicio Cursor
+Tras crear/editar mcp.json:
+
+Cierro Cursor.
+Lo vuelvo a abrir para que cargue los nuevos MCP servers.
+4. Ver y usar los MCP en Cursor
+Abro un chat en Cursor.
+En el panel de herramientas (normalmente lateral), se ven los MCP tools que detecta.
+Puedo:
+-Activarlos/desactivarlos.
+-Permitir que el agente los use automáticamente cuando hagan falta (según tu configuración de “auto-run”).
+5. Atajo rápido: Marketplace
+
+Settings → Tools & MCP o al Marketplace de Cursor.
+Elijo un conector (GitHub, Notion, Postgres, etc.).
+Pulso “Add to Cursor” y sigue los pasos (auth, tokens, etc.).
+Cursor me genera y mantiene la config MCP.
+
+
+
