@@ -40,4 +40,7 @@ Función refactorizada
     el fondo que el usuario prefiera.
 
     Cursor está siendo especialmente util en la función que cambia el fondo entre claro y oscuro,
-    pero también ha sido de mucha ayuda guardando las preferencias del usuario en LocalStorage, porque ha abreviado y optimizado el código, que era bastant más denso antes.
+    pero también ha sido de mucha ayuda guardando las preferencias del usuario en LocalStorage, porque ha abreviado y optimizado el código, que era bastante más denso antes.
+
+Además, cursor tiene atajos muy interesantes como Ctrl + L para desplegar el chat y hablar con el y
+Ctrl + K para abrir la paleta de comandos.
