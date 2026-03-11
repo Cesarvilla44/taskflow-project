@@ -11,7 +11,12 @@ const themeLabel = document.getElementById('theme-label');
 
 let tasks = [];
 
-// Aplica tema y guarda preferencia
+/**
+ * Aplica el tema claro/oscuro al documento y persiste la preferencia en localStorage.
+ *
+ * @param {boolean} isDark - Indica si debe activarse el modo oscuro (`true`) o el modo claro (`false`).
+ * @returns {void}
+ */
 function applyTheme(isDark) {
     if (isDark) {
         html.classList.add('dark');
@@ -32,6 +37,14 @@ function applyTheme(isDark) {
     }
 }
 
+/**
+ * Inicializa la aplicación cuando el DOM está listo.
+ * - Carga tareas desde localStorage.
+ * - Restaura el tema guardado (claro/oscuro).
+ * - Conecta el botón de cambio de tema.
+ *
+ * @returns {void}
+ */
 window.addEventListener('DOMContentLoaded', () => {
     // Tareas guardadas
     const storedTasks = JSON.parse(localStorage.getItem('tasks'));
@@ -60,6 +73,12 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 
+/**
+ * Pinta en el DOM la lista de tareas, opcionalmente filtradas por texto.
+ *
+ * @param {string} [filter=""] - Texto a buscar dentro de `task.text` (no sensible a mayúsculas).
+ * @returns {void}
+ */
 function renderTasks(filter = '') {
     tasksContainer.innerHTML = '';
 
@@ -94,11 +113,23 @@ function renderTasks(filter = '') {
 }
 
 
+/**
+ * Guarda el array de tareas actual en localStorage.
+ *
+ * @returns {void}
+ */
 function saveTasks() {
     localStorage.setItem('tasks', JSON.stringify(tasks));
 }
 
 
+/**
+ * Elimina una tarea por índice, actualiza el almacenamiento
+ * y vuelve a renderizar la lista usando el filtro actual.
+ *
+ * @param {number|string} index - Índice de la tarea en el array `tasks`.
+ * @returns {void}
+ */
 function deleteTask(index) {
     tasks.splice(index, 1);
     saveTasks();
@@ -106,6 +137,14 @@ function deleteTask(index) {
 }
 
 
+/**
+ * Maneja el envío del formulario de tareas.
+ * Crea una nueva tarea a partir del texto introducido,
+ * la guarda y actualiza la lista mostrada.
+ *
+ * @param {SubmitEvent} e - Evento de envío del formulario.
+ * @returns {void}
+ */
 taskForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const taskText = taskInput.value.trim();
@@ -124,6 +163,13 @@ taskForm.addEventListener('submit', (e) => {
 });
 
 
+/**
+ * Maneja el evento de entrada en el buscador de tareas
+ * y vuelve a renderizar la lista aplicando el filtro.
+ *
+ * @param {InputEvent} e - Evento de entrada del campo de búsqueda.
+ * @returns {void}
+ */
 searchInput.addEventListener('input', (e) => {
     renderTasks(e.target.value);
 });
