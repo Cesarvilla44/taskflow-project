@@ -208,7 +208,7 @@ Evita cambios innecesarios.
 
 ---
 
-# 9. Generación de documentación del proyecto
+9. Generación de documentación del proyecto
 
 Prompt
 
@@ -260,14 +260,14 @@ Reduce la probabilidad de errores en producción.
 
 ---
 
-# Conclusión
+Conclusión
 
 Los prompts funcionan bien porque combinan:
 
-* **Roles expertos**
-* **Restricciones claras**
-* **Ejemplos (few-shot)**
-* **Razonamiento paso a paso**
-* **Estructura en la salida**
+-Roles expertos
+-Restricciones claras
+-Ejemplos (few-shot)
+-Razonamiento paso a paso
+-Estructura en la salida
 
 Estas técnicas mejoran la precisión, consistencia y utilidad de las respuestas generadas por IA.
