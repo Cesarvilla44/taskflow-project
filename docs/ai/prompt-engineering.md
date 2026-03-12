@@ -1,1 +1,2 @@
-Anotaré experimentos específicos realizados fuera de la comparativa estándar, como peticiones de refactorización compleja, creación de tests unitarios o resolución de problemas de arquitectura.
+Anotaré experimentos específicos realizados fuera de la comparativa estándar, como peticiones de refactorización compleja, creación de tests unitarios o resolución de problemas de arquitectura. Se abarcan prompts útiles para trabajar con IA en desarrollo de software.
+Cada prompt utiliza técnicas como definición de rol, few-shot prompting, razonamiento paso a paso y restricciones claras.
