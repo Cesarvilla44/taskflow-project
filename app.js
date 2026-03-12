@@ -253,7 +253,7 @@ function renderTasks() {
 
     visibleTasks.forEach((task) => {
         const taskDiv = document.createElement('div');
-        taskDiv.className = `task-card ${task.priority || 'medium'}`;
+        taskDiv.className = `task-card ${task.priority || 'medium'} flex flex-col gap-3`;
         taskDiv.dataset.taskId = task.id;
 
         const isEditing = editingTaskId === task.id;
@@ -272,12 +272,8 @@ function renderTasks() {
             : `
                 <div class="task-content">
                     <span class="task-title"><strong>${safeText}</strong></span>
-                    <div class="text-xs text-slate-500 dark:text-slate-300 mt-1 flex flex-wrap gap-2">
-                        <span class="px-2 py-1 rounded-full bg-slate-200 dark:bg-slate-700">${task.category}</span>
-                        <span class="px-2 py-1 rounded-full bg-slate-200 dark:bg-slate-700">${task.priority}</span>
-                    </div>
                 </div>
-                <div class="flex gap-2 justify-end">
+                <div class="flex gap-2 justify-end mt-3">
                     <button class="edit-btn bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg font-bold transition">Editar</button>
                     <button class="delete-btn bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-bold transition">Borrar</button>
                 </div>
