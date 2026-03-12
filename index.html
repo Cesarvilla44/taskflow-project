@@ -45,6 +45,39 @@
                     <input type="text" id="search-input" placeholder="Buscar tareas..." 
                            class="w-full p-4 rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <label class="text-sm font-semibold">
+                        Categoría
+                        <select id="category-filter" class="mt-1 w-full p-3 rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="all">Todas</option>
+                            <option value="General">General</option>
+                            <option value="Trabajo">Trabajo</option>
+                            <option value="Estudio">Estudio</option>
+                            <option value="Personal">Personal</option>
+                        </select>
+                    </label>
+
+                    <label class="text-sm font-semibold">
+                        Prioridad
+                        <select id="priority-filter" class="mt-1 w-full p-3 rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="all">Todas</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Media">Media</option>
+                            <option value="Baja">Baja</option>
+                        </select>
+                    </label>
+
+                    <label class="text-sm font-semibold">
+                        Ordenar
+                        <select id="sort-select" class="mt-1 w-full p-3 rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="newest">Más recientes</option>
+                            <option value="oldest">Más antiguas</option>
+                            <option value="az">A → Z</option>
+                            <option value="za">Z → A</option>
+                        </select>
+                    </label>
+                </div>
                 
                 <div id="tasks-container" class="space-y-3">
                     <div class="p-4 border rounded-lg dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-400 italic">
