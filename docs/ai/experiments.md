@@ -101,7 +101,7 @@ El programador sigue necesitando comprender el problema, ya que la IA puede gene
 
 La mejor estrategia es usar IA como herramienta de apoyo, no como sustituto del razonamiento del desarrollador.
 
-Reflexión final
+Reflexión final:
 
 La IA mejora la velocidad de desarrollo y ayuda a encontrar soluciones más limpias.
 Sin embargo, la comprensión del problema y la capacidad de evaluar la calidad del código siguen siendo responsabilidades del programador.
