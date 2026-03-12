@@ -273,9 +273,9 @@ function renderTasks() {
                 <div class="task-content">
                     <span class="task-title"><strong>${safeText}</strong></span>
                 </div>
-                <div class="flex gap-2 justify-end mt-3">
-                    <button class="edit-btn bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg font-bold transition">Editar</button>
-                    <button class="delete-btn bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-bold transition">Borrar</button>
+                <div style="display:flex; width:100%; justify-content:flex-start; gap:8px; margin-top:12px;">
+                    <button class="edit-btn">Editar</button>
+                    <button class="delete-btn">Borrar</button>
                 </div>
             `;
 
