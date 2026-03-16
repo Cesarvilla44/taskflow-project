@@ -5,6 +5,8 @@ const searchInput = document.getElementById('search-input');
 const categoryFilter = document.getElementById('category-filter');
 const priorityFilter = document.getElementById('priority-filter');
 const sortSelect = document.getElementById('sort-select');
+const completeAllBtn = document.getElementById('complete-all-btn');
+const deleteAllBtn = document.getElementById('delete-all-btn');
 
 // Tema (claro/oscuro)
 const html = document.documentElement;
@@ -22,6 +24,7 @@ let editingTaskId = null;
  * @property {string} category
  * @property {string} priority
  * @property {number} createdAt
+ * @property {boolean} completed
  */
 
 /**
@@ -45,8 +48,9 @@ function normalizeTask(task) {
     const priority = typeof task?.priority === 'string' ? task.priority : 'Media';
     const createdAt = Number.isFinite(task?.createdAt) ? task.createdAt : Date.now();
     const id = typeof task?.id === 'string' ? task.id : createId();
+    const completed = Boolean(task?.completed);
 
-    return { id, text, category, priority, createdAt };
+    return { id, text, category, priority, createdAt, completed };
 }
 
 /**
@@ -253,7 +257,7 @@ function renderTasks() {
 
     visibleTasks.forEach((task) => {
         const taskDiv = document.createElement('div');
-        taskDiv.className = `task-card ${task.priority || 'medium'} flex flex-col gap-3`;
+        taskDiv.className = `task-card ${task.priority || 'medium'}`;
         taskDiv.dataset.taskId = task.id;
 
         const isEditing = editingTaskId === task.id;
@@ -264,18 +268,18 @@ function renderTasks() {
                 <div class="task-content">
                     <input class="edit-input w-full p-2 rounded-md border bg-white dark:bg-slate-800 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500" value="${safeText}" />
                 </div>
-                <div class="flex gap-2 justify-end">
-                    <button class="save-btn bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg font-bold transition">Guardar</button>
-                    <button class="cancel-btn bg-slate-500 hover:bg-slate-600 text-white px-3 py-2 rounded-lg font-bold transition">Cancelar</button>
+                <div class="task-actions">
+                    <button class="save-btn save-btn">💾 Guardar</button>
+                    <button class="cancel-btn cancel-btn">Cancelar</button>
                 </div>
             `
             : `
                 <div class="task-content">
-                    <span class="task-title"><strong>${safeText}</strong></span>
+                    <span class="task-title${task.completed ? ' task-completed' : ''}"><strong>${safeText}</strong></span>
                 </div>
-                <div style="display:flex; width:100%; justify-content:flex-start; gap:8px; margin-top:12px;">
-                    <button class="edit-btn">Editar</button>
-                    <button class="delete-btn">Borrar</button>
+                <div class="task-actions">
+                    <button class="edit-btn edit-btn">📝 Editar</button>
+                    <button class="delete-btn delete-btn">🧽 Borrar</button>
                 </div>
             `;
 
@@ -332,7 +336,8 @@ taskForm.addEventListener('submit', (e) => {
         text: taskText,
         category: 'General',
         priority: 'Media',
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        completed: false
     }));
 
     saveTasks();
@@ -355,6 +360,24 @@ searchInput.addEventListener('input', (e) => {
 if (categoryFilter) categoryFilter.addEventListener('change', () => renderTasks());
 if (priorityFilter) priorityFilter.addEventListener('change', () => renderTasks());
 if (sortSelect) sortSelect.addEventListener('change', () => renderTasks());
+
+if (completeAllBtn) {
+    completeAllBtn.addEventListener('click', () => {
+        if (!tasks.length) return;
+        tasks = tasks.map(t => ({ ...t, completed: true }));
+        saveTasks();
+        renderTasks();
+    });
+}
+
+if (deleteAllBtn) {
+    deleteAllBtn.addEventListener('click', () => {
+        if (!tasks.length) return;
+        tasks = [];
+        saveTasks();
+        renderTasks();
+    });
+}
 
 // Delegación de eventos para acciones por tarea (editar/borrar/guardar/cancelar)
 tasksContainer.addEventListener('click', (e) => {

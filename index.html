@@ -5,6 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tailwind Task Manager</title>
     <link rel="stylesheet" href="output.css">
+    <style>
+        /* Tarjetas de tareas: estilo consistente con el resto de la UI */
+        .task-card {
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background-color: #f8fafc;
+            padding: 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        body.dark .task-card {
+            background-color: rgba(15, 23, 42, 0.7);
+            border-color: rgba(51, 65, 85, 0.9);
+        }
+
+        .task-card + .task-card {
+            margin-top: 0.5rem;
+        }
+
+        .task-content .task-title {
+            font-size: 0.95rem;
+        }
+
+        .task-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .task-actions button {
+            font-size: 0.8rem;
+            border-radius: 999px; /* pill como el botón Añadir */
+            padding: 0.45rem 0.9rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 700;
+            color: #ffffff;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.25);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+        }
+
+        .task-actions button:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.05);
+        }
+
+        .task-actions button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+        }
+
+        .task-actions .edit-btn {
+            background: linear-gradient(135deg, #f97316, #fb923c);
+        }
+
+        .task-actions .delete-btn {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+        }
+
+        .task-actions .save-btn {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+        }
+
+        .task-actions .cancel-btn {
+            background: linear-gradient(135deg, #64748b, #94a3b8);
+        }
+
+        .task-title.task-completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+
+        .bulk-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: flex-end;
+        }
+
+        .bulk-actions button {
+            border-radius: 999px;
+            padding: 0.55rem 1rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            border: none;
+            cursor: pointer;
+            color: #ffffff;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .bulk-complete-btn {
+            background: linear-gradient(135deg, #0ea5e9, #22c55e);
+        }
+
+        .bulk-delete-btn {
+            background: linear-gradient(135deg, #dc2626, #7f1d1d);
+        }
+    </style>
 </head>
 <body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-500 min-h-screen">
 
@@ -83,6 +188,11 @@
                     <div class="p-4 border rounded-lg dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-slate-400 italic">
                         No hay tareas por ahora.
                     </div>
+                </div>
+
+                <div class="bulk-actions">
+                    <button id="complete-all-btn" class="bulk-complete-btn">🚀 Completar todas las tareas</button>
+                    <button id="delete-all-btn" class="bulk-delete-btn">🗑️ Eliminar todas las tareas</button>
                 </div>
             </div>
         </section>
