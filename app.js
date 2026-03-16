@@ -7,6 +7,15 @@ const priorityFilter = document.getElementById('priority-filter');
 const sortSelect = document.getElementById('sort-select');
 const completeAllBtn = document.getElementById('complete-all-btn');
 const deleteAllBtn = document.getElementById('delete-all-btn');
+const notesOpenBtn = document.getElementById('notes-open-btn');
+const notesModal = document.getElementById('notes-modal');
+const notesTaskSelect = document.getElementById('notes-task-select');
+const notesTextarea = document.getElementById('notes-textarea');
+const notesCharCount = document.getElementById('notes-char-count');
+const notesAcceptBtn = document.getElementById('notes-accept-btn');
+const notesCancelBtn = document.getElementById('notes-cancel-btn');
+const notesCloseIcon = document.getElementById('notes-close-icon');
+const notesWarning = document.getElementById('notes-warning');
 
 // Tema (claro/oscuro)
 const html = document.documentElement;
@@ -25,6 +34,7 @@ let editingTaskId = null;
  * @property {string} priority
  * @property {number} createdAt
  * @property {boolean} completed
+ * @property {string[]} notes
  */
 
 /**
@@ -49,8 +59,9 @@ function normalizeTask(task) {
     const createdAt = Number.isFinite(task?.createdAt) ? task.createdAt : Date.now();
     const id = typeof task?.id === 'string' ? task.id : createId();
     const completed = Boolean(task?.completed);
+    const notes = Array.isArray(task?.notes) ? task.notes.map(String) : [];
 
-    return { id, text, category, priority, createdAt, completed };
+    return { id, text, category, priority, createdAt, completed, notes };
 }
 
 /**
@@ -261,7 +272,11 @@ function renderTasks() {
         taskDiv.dataset.taskId = task.id;
 
         const isEditing = editingTaskId === task.id;
-        const safeText = task.text.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+        const safeText = task.text
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;');
 
         taskDiv.innerHTML = isEditing
             ? `
@@ -284,6 +299,20 @@ function renderTasks() {
             `;
 
         tasksContainer.appendChild(taskDiv);
+
+        // Anotaciones fuera de la tarjeta, justo debajo
+        if (task.notes && task.notes.length) {
+            const notesWrapper = document.createElement('div');
+            notesWrapper.innerHTML = `<ul class="task-notes">${task.notes
+                .map(n =>
+                    `<li><em>${String(n)
+                        .replaceAll('&', '&amp;')
+                        .replaceAll('<', '&lt;')
+                        .replaceAll('>', '&gt;')}</em></li>`
+                )
+                .join('')}</ul>`;
+            tasksContainer.appendChild(notesWrapper);
+        }
     });
 }
 
@@ -337,7 +366,8 @@ taskForm.addEventListener('submit', (e) => {
         category: 'General',
         priority: 'Media',
         createdAt: Date.now(),
-        completed: false
+        completed: false,
+        notes: []
     }));
 
     saveTasks();
@@ -376,6 +406,116 @@ if (deleteAllBtn) {
         tasks = [];
         saveTasks();
         renderTasks();
+    });
+}
+
+// --- Anotaciones ---
+
+function openNotesModal() {
+    if (!notesModal) return;
+
+    const hasTasks = tasks.length > 0;
+
+    // Mostrar/ocultar aviso y habilitar/deshabilitar controles
+    if (notesWarning) notesWarning.style.display = hasTasks ? 'none' : 'block';
+    if (notesTaskSelect) {
+        notesTaskSelect.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = hasTasks ? 'Selecciona una tarea...' : 'No hay tareas disponibles';
+        notesTaskSelect.appendChild(placeholder);
+
+        if (hasTasks) {
+            tasks.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.text;
+                notesTaskSelect.appendChild(opt);
+            });
+        }
+
+        notesTaskSelect.disabled = !hasTasks;
+    }
+
+    if (notesTextarea) {
+        notesTextarea.value = '';
+        notesTextarea.disabled = !hasTasks;
+    }
+    if (notesCharCount) notesCharCount.textContent = '0';
+    if (notesAcceptBtn) notesAcceptBtn.disabled = !hasTasks;
+
+    notesModal.classList.remove('hidden');
+
+    // Enfoca el selector al abrir
+    if (notesTaskSelect && hasTasks) notesTaskSelect.focus();
+}
+
+function closeNotesModal() {
+    if (!notesModal) return;
+    notesModal.classList.add('hidden');
+}
+
+function addNoteToTask(taskId, noteText) {
+    const task = findTaskById(taskId);
+    if (!task) return;
+    if (!Array.isArray(task.notes)) task.notes = [];
+    task.notes.push(noteText);
+    saveTasks();
+}
+
+if (notesOpenBtn) {
+    notesOpenBtn.addEventListener('click', () => {
+        openNotesModal();
+    });
+}
+
+if (notesCancelBtn) {
+    notesCancelBtn.addEventListener('click', () => {
+        closeNotesModal();
+    });
+}
+
+if (notesCloseIcon) {
+    notesCloseIcon.addEventListener('click', () => {
+        closeNotesModal();
+    });
+}
+
+// Cerrar al pulsar ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!notesModal) return;
+    if (!notesModal.classList.contains('hidden')) closeNotesModal();
+});
+
+// Cerrar al hacer clic fuera del cuadro (backdrop)
+if (notesModal) {
+    notesModal.addEventListener('click', (e) => {
+        if (e.target === notesModal) closeNotesModal();
+    });
+}
+
+if (notesTextarea && notesCharCount) {
+    notesTextarea.addEventListener('input', () => {
+        const current = notesTextarea.value.slice(0, 500);
+        if (notesTextarea.value.length > 500) {
+            notesTextarea.value = current;
+        }
+        notesCharCount.textContent = String(current.length);
+    });
+}
+
+if (notesAcceptBtn) {
+    notesAcceptBtn.addEventListener('click', () => {
+        if (!notesTaskSelect || !notesTextarea) return;
+        const taskId = notesTaskSelect.value;
+        const noteText = notesTextarea.value.trim();
+
+        if (!taskId || !noteText) return;
+
+        addNoteToTask(taskId, noteText);
+        renderTasks();
+        closeNotesModal();
     });
 }
 
