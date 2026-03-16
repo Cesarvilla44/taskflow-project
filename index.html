@@ -6,6 +6,20 @@
     <title>Tailwind Task Manager</title>
     <link rel="stylesheet" href="output.css">
     <style>
+        /* Tipografía general más profesional */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .app-footer {
+            border-top: none;
+            background: transparent;
+        }
+
+        .dark .app-footer {
+            border-top: none;
+            background: transparent;
+        }
         /* Tarjetas de tareas: estilo consistente con el resto de la UI */
         .task-card {
             border-radius: 0.75rem;
@@ -375,6 +389,11 @@
             </div>
         </section>
     </main>
+
+    <footer class="app-footer mt-8 text-slate-500 dark:text-slate-400"
+            style="text-align: center; font-size: 0.8rem; font-weight: 600; padding: 1.3rem 0; min-height: 64px; border-top: none; background: transparent;">
+        @ Flujo de Tareas, 2026.
+    </footer>
 
     <!-- Modal de anotaciones -->
     <div id="notes-modal" class="notes-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="notes-modal-title">
