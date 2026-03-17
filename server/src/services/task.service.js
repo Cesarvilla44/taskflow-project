@@ -1,4 +1,3 @@
-// Persistencia simulada en memoria
 let tasks = [];
 
 const obtenerTodas = () => {
@@ -7,7 +6,7 @@ const obtenerTodas = () => {
 
 const crearTarea = (data) => {
   const nuevaTarea = {
-    id: Date.now().toString(), // Generamos un ID simple
+    id: Date.now().toString(),
     ...data
   };
   tasks.push(nuevaTarea);
@@ -16,11 +15,9 @@ const crearTarea = (data) => {
 
 const eliminarTarea = (id) => {
   const indice = tasks.findIndex(t => t.id === id);
-  
   if (indice === -1) {
     throw new Error('NOT_FOUND');
   }
-  
   tasks.splice(indice, 1);
   return true;
 };

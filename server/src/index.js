@@ -1,23 +1,21 @@
-// Agregamos '../' para salir de src y buscar la carpeta config en la raíz
-const { PORT } = require('../config/env');
 const express = require('express');
-
-// Como ya estamos dentro de src, entramos directo a ./routes
+const app = express();
 const taskRoutes = require('./routes/task.routes');
 
-const app = express();
+const PORT = 3000;
 
-// Middleware para procesar JSON
+// Middleware para leer JSON
 app.use(express.json());
 
+// Ruta de prueba
 app.get('/', (req, res) => {
     res.send('¡Hola! El servidor está funcionando perfectamente 🚀');
 });
 
-// Rutas de la API
+// Montaje de la API de tareas
 app.use('/api/v1/tasks', taskRoutes);
 
 app.listen(PORT, () => {
-    console.log(`Servidor corriendo en el puerto ${PORT}`);
-    console.log(`API de tareas lista en: http://localhost:${PORT}/api/v1/tasks`);
+    console.log(`\n✅ SERVIDOR ACTIVO`);
+    console.log(`🔗 URL: http://localhost:${PORT}/api/v1/tasks`);
 });
