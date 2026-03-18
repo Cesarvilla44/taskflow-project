@@ -4,6 +4,8 @@ const tasksContainer = document.getElementById('tasks-container');
 const searchInput = document.getElementById('search-input');
 const categoryFilter = document.getElementById('category-filter');
 const priorityFilter = document.getElementById('priority-filter');
+const taskSelectorLabel = document.getElementById('task-selector-label');
+const taskPrioritySelector = document.getElementById('task-priority-selector');
 const sortSelect = document.getElementById('sort-select');
 const completeAllBtn = document.getElementById('complete-all-btn');
 const deleteAllBtn = document.getElementById('delete-all-btn');
@@ -38,10 +40,95 @@ let editingTaskId = null;
  */
 
 /**
- * Genera un id simple para tareas.
+ * Obtiene la clase CSS para la prioridad de una tarea.
  *
- * @returns {string}
+ * @param {string} priority - Prioridad de la tarea ('Alta', 'Media', 'Baja')
+ * @returns {string} Clase CSS correspondiente
  */
+function getPriorityClass(priority) {
+    switch (priority) {
+        case 'Alta':
+            return 'priority-alta';
+        case 'Media':
+            return 'priority-media';
+        case 'Baja':
+            return 'priority-baja';
+        default:
+            return 'priority-media';
+    }
+}
+
+/**
+ * Genera el HTML para la insignia de prioridad.
+ *
+ * @param {string} priority - Prioridad de la tarea
+ * @returns {string} HTML de la insignia de prioridad
+ */
+function getPriorityBadge(priority) {
+    const priorityClass = getPriorityClass(priority);
+    return `<span class="task-priority-badge ${priorityClass}">${priority}</span>`;
+}
+
+/**
+ * Actualiza el selector de tareas con la lista actual de tareas.
+ *
+ * @returns {void}
+ */
+function updateTaskSelector() {
+    if (!taskPrioritySelector) return;
+    
+    taskPrioritySelector.innerHTML = '<option value="">Selecciona una tarea...</option>';
+    
+    if (tasks.length === 0) {
+        taskPrioritySelector.innerHTML = '<option value="">No hay tareas disponibles</option>';
+        return;
+    }
+    
+    tasks.forEach(task => {
+        const option = document.createElement('option');
+        option.value = task.id;
+        option.textContent = `${task.text} (Actual: ${task.priority})`;
+        taskPrioritySelector.appendChild(option);
+    });
+}
+
+/**
+ * Muestra u oculta el selector de tareas según la prioridad seleccionada.
+ *
+ * @param {string} selectedPriority - Prioridad seleccionada en el filtro
+ * @returns {void}
+ */
+function toggleTaskSelector(selectedPriority) {
+    if (!taskSelectorLabel || !taskPrioritySelector) return;
+    
+    if (selectedPriority === 'all') {
+        taskSelectorLabel.style.display = 'none';
+        taskPrioritySelector.value = '';
+    } else {
+        taskSelectorLabel.style.display = 'block';
+        updateTaskSelector();
+    }
+}
+
+/**
+ * Aplica la prioridad seleccionada a la tarea especificada.
+ *
+ * @param {string} taskId - ID de la tarea a modificar
+ * @param {string} newPriority - Nueva prioridad a aplicar
+ * @returns {void}
+ */
+function applyPriorityToTask(taskId, newPriority) {
+    const task = findTaskById(taskId);
+    if (!task) return;
+    
+    task.priority = newPriority;
+    saveTasks();
+    renderTasks();
+    
+    // Resetear el selector
+    if (priorityFilter) priorityFilter.value = 'all';
+    toggleTaskSelector('all');
+}
 function createId() {
     return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
@@ -289,6 +376,7 @@ function renderTasks() {
                 </div>
             `
             : `
+                ${getPriorityBadge(task.priority)}
                 <div class="task-content">
                     <span class="task-title${task.completed ? ' task-completed' : ''}"><strong>${safeText}</strong></span>
                 </div>
@@ -388,7 +476,23 @@ searchInput.addEventListener('input', (e) => {
 });
 
 if (categoryFilter) categoryFilter.addEventListener('change', () => renderTasks());
-if (priorityFilter) priorityFilter.addEventListener('change', () => renderTasks());
+if (priorityFilter) {
+    priorityFilter.addEventListener('change', (e) => {
+        const selectedPriority = e.target.value;
+        toggleTaskSelector(selectedPriority);
+        renderTasks();
+    });
+}
+if (taskPrioritySelector) {
+    taskPrioritySelector.addEventListener('change', (e) => {
+        const selectedTaskId = e.target.value;
+        const selectedPriority = priorityFilter ? priorityFilter.value : 'all';
+        
+        if (selectedTaskId && selectedPriority !== 'all') {
+            applyPriorityToTask(selectedTaskId, selectedPriority);
+        }
+    });
+}
 if (sortSelect) sortSelect.addEventListener('change', () => renderTasks());
 
 if (completeAllBtn) {
