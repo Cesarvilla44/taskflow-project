@@ -3,6 +3,8 @@ const taskInput = document.getElementById('task-input');
 const tasksContainer = document.getElementById('tasks-container');
 const searchInput = document.getElementById('search-input');
 const categoryFilter = document.getElementById('category-filter');
+const categoryTaskSelectorLabel = document.getElementById('category-task-selector-label');
+const categoryTaskSelector = document.getElementById('category-task-selector');
 const priorityFilter = document.getElementById('priority-filter');
 const taskSelectorLabel = document.getElementById('task-selector-label');
 const taskPrioritySelector = document.getElementById('task-priority-selector');
@@ -69,6 +71,102 @@ function getPriorityClass(priority) {
 function getPriorityBadge(priority) {
     const priorityClass = getPriorityClass(priority);
     return `<span class="task-priority-badge ${priorityClass}">${priority}</span>`;
+}
+
+/**
+ * Obtiene la clase CSS para la categoría de una tarea.
+ *
+ * @param {string} category - Categoría de la tarea ('General', 'Trabajo', 'Estudio', 'Personal')
+ * @returns {string} Clase CSS correspondiente
+ */
+function getCategoryClass(category) {
+    if (!category) return '';
+    
+    switch (category) {
+        case 'General':
+            return 'category-general';
+        case 'Trabajo':
+            return 'category-trabajo';
+        case 'Estudio':
+            return 'category-estudio';
+        case 'Personal':
+            return 'category-personal';
+        default:
+            return '';
+    }
+}
+
+/**
+ * Genera el HTML para la insignia de categoría.
+ *
+ * @param {string} category - Categoría de la tarea
+ * @returns {string} HTML de la insignia de categoría
+ */
+function getCategoryBadge(category) {
+    const categoryClass = getCategoryClass(category);
+    return `<span class="task-category-badge ${categoryClass}">${category}</span>`;
+}
+
+/**
+ * Actualiza el selector de tareas para categorías con la lista actual de tareas.
+ *
+ * @returns {void}
+ */
+function updateCategoryTaskSelector() {
+    if (!categoryTaskSelector) return;
+    
+    categoryTaskSelector.innerHTML = '<option value="">Selecciona una tarea...</option>';
+    
+    if (tasks.length === 0) {
+        categoryTaskSelector.innerHTML = '<option value="">No hay tareas disponibles</option>';
+        return;
+    }
+    
+    tasks.forEach(task => {
+        const option = document.createElement('option');
+        option.value = task.id;
+        const categoryText = task.category || 'Sin categoría';
+        option.textContent = `${task.text} (Actual: ${categoryText})`;
+        categoryTaskSelector.appendChild(option);
+    });
+}
+
+/**
+ * Muestra u oculta el selector de tareas según la categoría seleccionada.
+ *
+ * @param {string} selectedCategory - Categoría seleccionada en el filtro
+ * @returns {void}
+ */
+function toggleCategoryTaskSelector(selectedCategory) {
+    if (!categoryTaskSelectorLabel || !categoryTaskSelector) return;
+    
+    if (selectedCategory === 'all') {
+        categoryTaskSelectorLabel.style.display = 'none';
+        categoryTaskSelector.value = '';
+    } else {
+        categoryTaskSelectorLabel.style.display = 'block';
+        updateCategoryTaskSelector();
+    }
+}
+
+/**
+ * Aplica la categoría seleccionada a la tarea especificada.
+ *
+ * @param {string} taskId - ID de la tarea a modificar
+ * @param {string} newCategory - Nueva categoría a aplicar
+ * @returns {void}
+ */
+function applyCategoryToTask(taskId, newCategory) {
+    const task = findTaskById(taskId);
+    if (!task) return;
+    
+    task.category = newCategory;
+    saveTasks();
+    renderTasks();
+    
+    // Resetear el selector
+    if (categoryFilter) categoryFilter.value = 'all';
+    toggleCategoryTaskSelector('all');
 }
 
 /**
@@ -144,7 +242,7 @@ function createId() {
  */
 function normalizeTask(task) {
     const text = typeof task?.text === 'string' ? task.text : '';
-    const category = typeof task?.category === 'string' ? task.category : 'General';
+    const category = typeof task?.category === 'string' && task.category ? task.category : '';
     const priority = typeof task?.priority === 'string' && task.priority ? task.priority : '';
     const createdAt = Number.isFinite(task?.createdAt) ? task.createdAt : Date.now();
     const id = typeof task?.id === 'string' ? task.id : createId();
@@ -379,6 +477,7 @@ function renderTasks() {
                 </div>
             `
             : `
+                ${task.category ? getCategoryBadge(task.category) : ''}
                 ${task.priority ? getPriorityBadge(task.priority) : ''}
                 <div class="task-content">
                     <span class="task-title${task.completed ? ' task-completed' : ''}"><strong>${safeText}</strong></span>
@@ -454,7 +553,7 @@ taskForm.addEventListener('submit', (e) => {
     tasks.push(normalizeTask({
         id: createId(),
         text: taskText,
-        category: 'General',
+        category: '',
         priority: '',
         createdAt: Date.now(),
         completed: false,
@@ -478,7 +577,23 @@ searchInput.addEventListener('input', (e) => {
     renderTasks();
 });
 
-if (categoryFilter) categoryFilter.addEventListener('change', () => renderTasks());
+if (categoryFilter) {
+    categoryFilter.addEventListener('change', (e) => {
+        const selectedCategory = e.target.value;
+        toggleCategoryTaskSelector(selectedCategory);
+        renderTasks();
+    });
+}
+if (categoryTaskSelector) {
+    categoryTaskSelector.addEventListener('change', (e) => {
+        const selectedTaskId = e.target.value;
+        const selectedCategory = categoryFilter ? categoryFilter.value : 'all';
+        
+        if (selectedTaskId && selectedCategory !== 'all') {
+            applyCategoryToTask(selectedTaskId, selectedCategory);
+        }
+    });
+}
 if (priorityFilter) {
     priorityFilter.addEventListener('change', (e) => {
         const selectedPriority = e.target.value;

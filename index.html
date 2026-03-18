@@ -54,6 +54,18 @@
             letter-spacing: 0.025em;
         }
 
+        .task-category-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 4rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
         .priority-alta {
             background-color: #dc2626;
             color: white;
@@ -69,6 +81,26 @@
             color: white;
         }
 
+        .category-general {
+            background-color: #6366f1;
+            color: white;
+        }
+
+        .category-trabajo {
+            background-color: #0ea5e9;
+            color: white;
+        }
+
+        .category-estudio {
+            background-color: #8b5cf6;
+            color: white;
+        }
+
+        .category-personal {
+            background-color: #ec4899;
+            color: white;
+        }
+
         .dark .priority-alta {
             background-color: #b91c1c;
         }
@@ -79,6 +111,22 @@
 
         .dark .priority-baja {
             background-color: #16a34a;
+        }
+
+        .dark .category-general {
+            background-color: #4f46e5;
+        }
+
+        .dark .category-trabajo {
+            background-color: #0284c7;
+        }
+
+        .dark .category-estudio {
+            background-color: #7c3aed;
+        }
+
+        .dark .category-personal {
+            background-color: #db2777;
         }
 
         .task-content .task-title {
@@ -392,6 +440,13 @@
                             <option value="Trabajo">Trabajo</option>
                             <option value="Estudio">Estudio</option>
                             <option value="Personal">Personal</option>
+                        </select>
+                    </label>
+
+                    <label class="text-sm font-semibold" id="category-task-selector-label" style="display: none;">
+                        Aplicar a tarea
+                        <select id="category-task-selector" class="mt-1 w-full p-3 rounded-xl border bg-white dark:bg-slate-800 dark:border-slate-700 outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Selecciona una tarea...</option>
                         </select>
                     </label>
 
