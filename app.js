@@ -46,6 +46,8 @@ let editingTaskId = null;
  * @returns {string} Clase CSS correspondiente
  */
 function getPriorityClass(priority) {
+    if (!priority) return '';
+    
     switch (priority) {
         case 'Alta':
             return 'priority-alta';
@@ -54,7 +56,7 @@ function getPriorityClass(priority) {
         case 'Baja':
             return 'priority-baja';
         default:
-            return 'priority-media';
+            return '';
     }
 }
 
@@ -87,7 +89,8 @@ function updateTaskSelector() {
     tasks.forEach(task => {
         const option = document.createElement('option');
         option.value = task.id;
-        option.textContent = `${task.text} (Actual: ${task.priority})`;
+        const priorityText = task.priority || 'Sin prioridad';
+        option.textContent = `${task.text} (Actual: ${priorityText})`;
         taskPrioritySelector.appendChild(option);
     });
 }
@@ -142,7 +145,7 @@ function createId() {
 function normalizeTask(task) {
     const text = typeof task?.text === 'string' ? task.text : '';
     const category = typeof task?.category === 'string' ? task.category : 'General';
-    const priority = typeof task?.priority === 'string' ? task.priority : 'Media';
+    const priority = typeof task?.priority === 'string' && task.priority ? task.priority : '';
     const createdAt = Number.isFinite(task?.createdAt) ? task.createdAt : Date.now();
     const id = typeof task?.id === 'string' ? task.id : createId();
     const completed = Boolean(task?.completed);
@@ -376,7 +379,7 @@ function renderTasks() {
                 </div>
             `
             : `
-                ${getPriorityBadge(task.priority)}
+                ${task.priority ? getPriorityBadge(task.priority) : ''}
                 <div class="task-content">
                     <span class="task-title${task.completed ? ' task-completed' : ''}"><strong>${safeText}</strong></span>
                 </div>
@@ -452,7 +455,7 @@ taskForm.addEventListener('submit', (e) => {
         id: createId(),
         text: taskText,
         category: 'General',
-        priority: 'Media',
+        priority: '',
         createdAt: Date.now(),
         completed: false,
         notes: []
