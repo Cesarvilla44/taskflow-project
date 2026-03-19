@@ -720,6 +720,7 @@ function saveTasks() {
 /**
  * Elimina una tarea por índice, actualiza el almacenamiento
  * y vuelve a renderizar la lista usando el filtro actual.
+ * También elimina los recordatorios asociados a la tarea.
  *
  * @param {number|string} index - Índice de la tarea en el array `tasks`.
  * @returns {void}
@@ -730,6 +731,20 @@ function deleteTask(index) {
     // Si el índice no es un número válido, no hacemos nada
     if (Number.isNaN(numericIndex)) return;
 
+    const task = tasks[numericIndex];
+    if (!task) return;
+
+    // Eliminar todos los recordatorios asociados a esta tarea
+    const remindersToRemove = reminders.filter(r => r.taskId === task.id);
+    remindersToRemove.forEach(reminder => {
+        stopReminder(reminder.taskId, reminder.frequency);
+    });
+
+    // Eliminar los recordatorios del array
+    reminders = reminders.filter(r => r.taskId !== task.id);
+    saveReminders();
+
+    // Eliminar la tarea
     tasks.splice(numericIndex, 1);
     saveTasks();
     renderTasks();
