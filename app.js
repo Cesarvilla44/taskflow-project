@@ -20,6 +20,14 @@ const notesAcceptBtn = document.getElementById('notes-accept-btn');
 const notesCancelBtn = document.getElementById('notes-cancel-btn');
 const notesCloseIcon = document.getElementById('notes-close-icon');
 const notesWarning = document.getElementById('notes-warning');
+const reminderOpenBtn = document.getElementById('reminder-open-btn');
+const reminderModal = document.getElementById('reminder-modal');
+const reminderTaskSelect = document.getElementById('reminder-task-select');
+const reminderFrequency = document.getElementById('reminder-frequency');
+const reminderAcceptBtn = document.getElementById('reminder-accept-btn');
+const reminderCancelBtn = document.getElementById('reminder-cancel-btn');
+const reminderCloseIcon = document.getElementById('reminder-close-icon');
+const reminderWarning = document.getElementById('reminder-warning');
 
 // Tema (claro/oscuro)
 const html = document.documentElement;
@@ -29,6 +37,8 @@ const themeLabel = document.getElementById('theme-label');
 
 let tasks = [];
 let editingTaskId = null;
+let reminders = [];
+let reminderIntervals = new Map();
 
 /**
  * @typedef {Object} Task
@@ -40,6 +50,190 @@ let editingTaskId = null;
  * @property {boolean} completed
  * @property {string[]} notes
  */
+
+/**
+ * Solicita permiso para notificaciones y muestra una notificación.
+ * También muestra un recuadro personalizado en el centro de la página.
+ *
+ * @param {string} title - Título de la notificación
+ * @param {string} body - Cuerpo de la notificación
+ * @returns {Promise<void>}
+ */
+async function showNotification(title, body) {
+    // Mostrar notificación del sistema
+    if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+            new Notification(title, {
+                body: body,
+                icon: '⏰',
+                badge: '⏰'
+            });
+        } else if (Notification.permission !== 'denied') {
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+                new Notification(title, {
+                    body: body,
+                    icon: '⏰',
+                    badge: '⏰'
+                });
+            }
+        }
+    }
+
+    // Mostrar recuadro personalizado
+    showReminderPopup(body);
+}
+
+/**
+ * Muestra el recuadro de recordatorio personalizado.
+ *
+ * @param {string} taskText - Texto de la tarea a recordar
+ * @returns {void}
+ */
+function showReminderPopup(taskText) {
+    // Eliminar cualquier popup existente
+    const existingPopup = document.querySelector('.reminder-popup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+
+    // Crear el popup
+    const popup = document.createElement('div');
+    popup.className = 'reminder-popup';
+    popup.innerHTML = `
+        <div class="reminder-popup-header">
+            <div class="reminder-popup-icon">⏰</div>
+            <h3 class="reminder-popup-title">¡Recordatorio!</h3>
+        </div>
+        <div class="reminder-popup-task">No olvides: ${taskText}</div>
+        <button class="reminder-popup-close" onclick="this.parentElement.remove()">
+            Entendido
+        </button>
+    `;
+
+    // Añadir al body
+    document.body.appendChild(popup);
+
+    // Auto-cerrar después de 10 segundos
+    setTimeout(() => {
+        if (popup.parentElement) {
+            popup.style.animation = 'reminderSlideIn 0.3s ease-out reverse';
+            setTimeout(() => popup.remove(), 300);
+        }
+    }, 10000);
+}
+
+/**
+ * Convierte frecuencia en milisegundos.
+ *
+ * @param {string} frequency - Frecuencia del recordatorio
+ * @returns {number} Milisegundos
+ */
+function getFrequencyInMs(frequency) {
+    switch (frequency) {
+        case '10min': return 10 * 60 * 1000;
+        case '30min': return 30 * 60 * 1000;
+        case '1hour': return 60 * 60 * 1000;
+        case '3hours': return 3 * 60 * 60 * 1000;
+        case 'onrestart': return 0;
+        default: return 30 * 60 * 1000;
+    }
+}
+
+/**
+ * Guarda los recordatorios en localStorage.
+ *
+ * @returns {void}
+ */
+function saveReminders() {
+    localStorage.setItem('reminders', JSON.stringify(reminders));
+}
+
+/**
+ * Carga los recordatorios desde localStorage.
+ *
+ * @returns {void}
+ */
+function loadReminders() {
+    try {
+        const stored = localStorage.getItem('reminders');
+        if (stored) {
+            reminders = JSON.parse(stored);
+        }
+    } catch (e) {
+        console.error('Error loading reminders:', e);
+        reminders = [];
+    }
+}
+
+/**
+ * Inicia un recordatorio.
+ *
+ * @param {string} taskId - ID de la tarea
+ * @param {string} frequency - Frecuencia del recordatorio
+ * @returns {void}
+ */
+function startReminder(taskId, frequency) {
+    const task = findTaskById(taskId);
+    if (!task) return;
+
+    const reminderId = `${taskId}-${frequency}`;
+    
+    // Limpiar recordatorio existente si hay
+    if (reminderIntervals.has(reminderId)) {
+        clearInterval(reminderIntervals.get(reminderId));
+    }
+
+    if (frequency === 'onrestart') {
+        // Solo se mostrará al reiniciar la aplicación
+        return;
+    }
+
+    const intervalMs = getFrequencyInMs(frequency);
+    
+    const interval = setInterval(() => {
+        showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
+    }, intervalMs);
+
+    reminderIntervals.set(reminderId, interval);
+}
+
+/**
+ * Detiene un recordatorio.
+ *
+ * @param {string} taskId - ID de la tarea
+ * @param {string} frequency - Frecuencia del recordatorio
+ * @returns {void}
+ */
+function stopReminder(taskId, frequency) {
+    const reminderId = `${taskId}-${frequency}`;
+    
+    if (reminderIntervals.has(reminderId)) {
+        clearInterval(reminderIntervals.get(reminderId));
+        reminderIntervals.delete(reminderId);
+    }
+}
+
+/**
+ * Inicia todos los recordatorios guardados.
+ *
+ * @returns {void}
+ */
+function startAllReminders() {
+    reminders.forEach(reminder => {
+        const task = findTaskById(reminder.taskId);
+        if (task && !task.completed) {
+            if (reminder.frequency === 'onrestart') {
+                // Mostrar notificación inmediata
+                setTimeout(() => {
+                    showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
+                }, 2000);
+            } else {
+                startReminder(reminder.taskId, reminder.frequency);
+            }
+        }
+    });
+}
 
 /**
  * Obtiene la clase CSS para la prioridad de una tarea.
@@ -401,6 +595,9 @@ window.addEventListener('DOMContentLoaded', () => {
         tasks = storedTasks.map(normalizeTask);
     }
 
+    // Recordatorios guardados
+    loadReminders();
+
     // Tema guardado
     const storedTheme = localStorage.getItem('theme');
     const initialIsDark =
@@ -430,6 +627,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     renderTasks();
+    
+    // Inicia todos los recordatorios
+    startAllReminders();
 });
 
 
@@ -688,6 +888,102 @@ function addNoteToTask(taskId, noteText) {
 if (notesOpenBtn) {
     notesOpenBtn.addEventListener('click', () => {
         openNotesModal();
+    });
+}
+
+// --- Recordatorios ---
+
+function openReminderModal() {
+    if (!reminderModal) return;
+
+    const hasTasks = tasks.length > 0;
+
+    // Mostrar/ocultar aviso y habilitar/deshabilitar controles
+    if (reminderWarning) reminderWarning.style.display = hasTasks ? 'none' : 'block';
+    if (reminderTaskSelect) {
+        reminderTaskSelect.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = hasTasks ? 'Selecciona una tarea...' : 'No hay tareas disponibles';
+        reminderTaskSelect.appendChild(placeholder);
+
+        if (hasTasks) {
+            tasks.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.text;
+                reminderTaskSelect.appendChild(opt);
+            });
+        }
+
+        reminderTaskSelect.disabled = !hasTasks;
+    }
+
+    if (reminderFrequency) {
+        reminderFrequency.disabled = !hasTasks;
+    }
+    if (reminderAcceptBtn) reminderAcceptBtn.disabled = !hasTasks;
+
+    reminderModal.classList.remove('hidden');
+
+    // Enfoca el selector al abrir
+    if (reminderTaskSelect && hasTasks) reminderTaskSelect.focus();
+}
+
+function closeReminderModal() {
+    if (!reminderModal) return;
+    reminderModal.classList.add('hidden');
+}
+
+if (reminderOpenBtn) {
+    reminderOpenBtn.addEventListener('click', () => {
+        openReminderModal();
+    });
+}
+
+if (reminderCancelBtn) {
+    reminderCancelBtn.addEventListener('click', () => {
+        closeReminderModal();
+    });
+}
+
+if (reminderCloseIcon) {
+    reminderCloseIcon.addEventListener('click', () => {
+        closeReminderModal();
+    });
+}
+
+// Cerrar al pulsar ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!reminderModal) return;
+    if (!reminderModal.classList.contains('hidden')) closeReminderModal();
+});
+
+// Cerrar al hacer clic fuera del cuadro (backdrop)
+if (reminderModal) {
+    reminderModal.addEventListener('click', (e) => {
+        if (e.target === reminderModal) closeReminderModal();
+    });
+}
+
+if (reminderAcceptBtn) {
+    reminderAcceptBtn.addEventListener('click', () => {
+        if (!reminderTaskSelect || !reminderFrequency) return;
+        const taskId = reminderTaskSelect.value;
+        const frequency = reminderFrequency.value;
+
+        if (!taskId || !frequency) return;
+
+        // Verificar si ya existe un recordatorio para esta tarea y frecuencia
+        const existingIndex = reminders.findIndex(r => r.taskId === taskId && r.frequency === frequency);
+        if (existingIndex === -1) {
+            reminders.push({ taskId, frequency });
+            saveReminders();
+            startReminder(taskId, frequency);
+        }
+
+        closeReminderModal();
     });
 }
 
