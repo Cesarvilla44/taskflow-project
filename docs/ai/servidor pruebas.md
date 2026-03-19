@@ -20,8 +20,7 @@ Se realiza una petición `DELETE` a una ID inexistente (`999999`) para verificar
 **Petición:** `DELETE http://localhost:3000/api/v1/tasks/999999`
 
 
-
-[C:\Users\cevim\Downloads\error-404.json](<../../fase c errores/error-404.json>)
+C:\Users\cevim\Documents\taskflow-project\Pruebas de robustez servidor (FASE C)\error-404.json
 
 > **Resultado:** El servidor devuelve un `404 Not Found` con un JSON explicativo.
 
@@ -30,6 +29,6 @@ Se realiza una petición `POST` enviando un cuerpo (body) sin el campo obligator
 
 **Petición:** `POST http://localhost:3000/api/v1/tasks`
 
-[C:\Users\cevim\Downloads\error-500.json](<../../fase c errores/error-500.json>)
+C:\Users\cevim\Documents\taskflow-project\Pruebas de robustez servidor (FASE C)\error-500.json
 
 > **Resultado:** El servidor responde con un `500 Internal Server Error`, protegiendo la integridad de la base de datos y la información del sistema.
