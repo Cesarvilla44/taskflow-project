@@ -19,7 +19,7 @@ Se realiza una petición `DELETE` a una ID inexistente (`999999`) para verificar
 
 **Petición:** `DELETE http://localhost:3000/api/v1/tasks/999999`
 
-![Captura Error 404](./docs/ai/images/Error%20404.png)
+
 
 [C:\Users\cevim\Downloads\error-404.json](<../../fase c errores/error-404.json>)
 
@@ -29,8 +29,6 @@ Se realiza una petición `DELETE` a una ID inexistente (`999999`) para verificar
 Se realiza una petición `POST` enviando un cuerpo (body) sin el campo obligatorio `title`. El controlador detecta la ausencia y lanza un error que es capturado por el middleware global.
 
 **Petición:** `POST http://localhost:3000/api/v1/tasks`
-
-![Captura Error 500](./docs/ai/images/Error%20500.png)
 
 [C:\Users\cevim\Downloads\error-500.json](<../../fase c errores/error-500.json>)
 
