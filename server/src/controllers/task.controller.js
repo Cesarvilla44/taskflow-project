@@ -1,26 +1,48 @@
 const taskService = require('../services/task.service');
 
+// Variable global para almacenar tareas cuando se envía un array
+let tasks = [];
+
 const getAllTasks = (req, res, next) => {
   try {
-    const tasks = taskService.obtenerTodas();
-    res.json(tasks);
+    const serviceTasks = taskService.obtenerTodas();
+    // Si tenemos tareas en memoria (guardadas por POST array), las usamos
+    // Si no, usamos las del servicio
+    const allTasks = tasks.length > 0 ? tasks : serviceTasks;
+    res.json(allTasks);
   } catch (error) {
     next(error); // Cualquier error inesperado va al manejador global (500)
   }
 };
 
 const createTask = (req, res, next) => {
-  const { title, description } = req.body;
+  // Si viene un array, guardamos todas las tareas
+  if (Array.isArray(req.body)) {
+    try {
+      tasks = req.body; // Reemplazamos todo el array
+      res.json(tasks);
+      return;
+    } catch (error) {
+      return next(error);
+    }
+  }
 
-  // PUNTO 3: Forzando error intencionado si no hay título
-  if (!title || title.trim() === '') {
-    // Al lanzar un error que NO es 'NOT_FOUND', 
-    // el index.js responderá con un HTTP 500 y registrará el error en consola.
-    return next(new Error('El título es obligatorio para crear la tarea'));
+  // Si viene una sola tarea (comportamiento original)
+  const { text, category, priority } = req.body;
+
+  // Verificar que hay texto para la tarea
+  if (!text || text.trim() === '') {
+    return next(new Error('El texto de la tarea es obligatorio'));
   }
 
   try {
-    const task = taskService.crearTarea({ title, description });
+    const task = taskService.crearTarea({ 
+      text: text.trim(), 
+      category: category || 'General', 
+      priority: priority || 'Media',
+      completed: false,
+      createdAt: Date.now()
+    });
     res.status(201).json(task);
   } catch (error) {
     next(error);

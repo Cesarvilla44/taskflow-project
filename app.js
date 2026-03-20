@@ -151,6 +151,7 @@ function getFrequencyInMs(frequency) {
  * @returns {Promise<void>}
  */
 async function loadReminders() {
+    console.log("📡 Iniciando carga de recordatorios desde servidor...");
     try {
         const response = await client.get('/reminders'); 
         console.log("📡 Respuesta cruda del servidor:", response);
@@ -166,6 +167,7 @@ async function loadReminders() {
         
         reminders = Array.isArray(remindersData) ? remindersData : [];
         console.log("📡 Recordatorios cargados desde servidor:", reminders.length);
+        console.log("📡 Recordatorios finales:", reminders);
     } catch (e) {
         console.error('❌ Error cargando recordatorios desde servidor:', e);
         reminders = [];
@@ -250,32 +252,92 @@ function stopReminder(taskId, frequency) {
 }
 
 /**
+ * Limpia automáticamente los recordatorios huérfanos (cuyas tareas no existen).
+ *
+ * @returns {Promise<void>}
+ */
+async function cleanupOrphanedReminders() {
+    console.log("🧹 Iniciando limpieza de recordatorios huérfanos...");
+    console.log("🧹 Recordatorios antes de limpieza:", reminders.length);
+    
+    const validReminders = reminders.filter(reminder => {
+        console.log(`🧹 Verificando recordatorio: ${reminder.taskId} - ${reminder.frequency}`);
+        const task = findTaskById(reminder.taskId);
+        const isValid = task && !task.completed;
+        console.log(`🧹 Tarea encontrada: ${task ? task.text : 'NO'}, Válida: ${isValid}`);
+        
+        if (!isValid) {
+            console.log(`🗑️ Eliminando recordatorio huérfano: ${reminder.taskId} - ${reminder.frequency}`);
+        }
+        return isValid;
+    });
+    
+    console.log(`🧹 Recordatorios válidos después de filtro: ${validReminders.length}`);
+    
+    if (validReminders.length !== reminders.length) {
+        console.log(`🧹 Limpiando ${reminders.length - validReminders.length} recordatorios huérfanos`);
+        reminders = validReminders;
+        await saveReminders();
+        console.log(`✅ ${reminders.length} recordatorios válidos restantes`);
+    } else {
+        console.log(`🧹 No hay recordatorios huérfanos para limpiar`);
+    }
+}
+
+/**
  * Inicia todos los recordatorios guardados.
  *
  * @returns {Promise<void>}
  */
 async function startAllReminders() {
-    console.log("🔄 Iniciando todos los recordatorios guardados...");
+    console.log("🔄 NUEVA VERSIÓN: Iniciando todos los recordatorios guardados...");
+    console.log("🔄 Versión 1.1 - CON LIMPIEZA AUTOMÁTICA");
     await loadReminders(); // Cargar desde servidor/localStorage
     console.log("📋 Recordatorios cargados:", reminders.length);
+    console.log("📋 Contenido de reminders:", reminders);
+    console.log("📋 Tareas disponibles:", tasks.map(t => ({ id: t.id, text: t.text, completed: t.completed })));
     
-    reminders.forEach(reminder => {
+    if (reminders.length === 0) {
+        console.log("📭 No hay recordatorios para iniciar");
+        return;
+    }
+    
+    console.log("🧹 A punto de limpiar recordatorios huérfanos...");
+    // Limpiar recordatorios huérfanos primero
+    await cleanupOrphanedReminders();
+    
+    if (reminders.length === 0) {
+        console.log("📭 Todos los recordatorios fueron huérfanos y fueron eliminados");
+        return;
+    }
+    
+    console.log(`🚀 Procesando ${reminders.length} recordatorios válidos...`);
+    
+    reminders.forEach((reminder, index) => {
+        console.log(`🔍 Procesando recordatorio ${index}:`, reminder);
+        console.log(`🔍 Buscando tarea con ID: ${reminder.taskId}`);
+        
         const task = findTaskById(reminder.taskId);
-        console.log("🔍 Procesando recordatorio:", reminder);
+        console.log(`📋 Tarea encontrada para recordatorio ${index}:`, task ? task.text : 'NO ENCONTRADA');
         
         if (task && !task.completed) {
+            console.log(`✅ Recordatorio ${index} válido - Tarea: ${task.text}, Frecuencia: ${reminder.frequency}`);
+            
             if (reminder.frequency === 'onrestart') {
                 // Mostrar notificación inmediata
-                console.log("🚀 Activando recordatorio 'onrestart' para:", task.text);
+                console.log(`🚀 Activando recordatorio 'onrestart' para: ${task.text}`);
+                console.log(`⏰ Programando notificación en 2 segundos...`);
                 setTimeout(() => {
+                    console.log(`🔔 ¡Ejecutando recordatorio 'onrestart' para: ${task.text}`);
                     showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
                 }, 2000);
             } else {
-                console.log("⏰ Iniciando recordatorio programado:", reminder.frequency, "para:", task.text);
+                console.log(`⏰ Iniciando recordatorio programado: ${reminder.frequency} para: ${task.text}`);
                 startReminder(reminder.taskId, reminder.frequency);
             }
         } else {
-            console.log("⏭️ Saltando recordatorio - tarea no encontrada o completada");
+            console.log(`⏭️ Saltando recordatorio ${index} - tarea no encontrada o completada`);
+            console.log(`🗑️ Este recordatorio debería eliminarse (tarea ID: ${reminder.taskId})`);
         }
     });
     
@@ -709,6 +771,7 @@ function setupAutoSavePreferences(currentPreferences) {
  */
 async function syncAppWithServer() {
     console.log("🚀 ¡La aplicación ha arrancado correctamente!");
+    console.log("🔍 Iniciando sincronización completa con servidor...");
     const statusEl = document.getElementById('network-status');
     
     // 1. ESTADO DE CARGA
@@ -726,7 +789,8 @@ async function syncAppWithServer() {
         ]);
 
         // 2. ESTADO DE ÉXITO
-        tasks = tasksRes.data; // El array global ahora tiene los datos del server
+        tasks = tasksRes.data.data || tasksRes.data || []; // El array global ahora tiene los datos del server
+        console.log("📋 Tareas cargadas desde servidor:", tasks.length);
 
         // Aplicar preferencias desde settings
         const settings = settingsRes.data || {};
@@ -744,6 +808,7 @@ async function syncAppWithServer() {
 
         // Dibujamos todo lo que ha llegado
         renderTasks(); 
+        console.log("🔍 A punto de iniciar recordatorios...");
         await startAllReminders(); // Cargar recordatorios desde servidor
         console.log("✅ Aplicación sincronizada con servidor");
         
@@ -866,12 +931,18 @@ function renderTasks() {
 
 
 /**
- * Guarda el array de tareas actual en localStorage.
+ * Guarda las tareas en el servidor.
  *
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
+async function saveTasks() {
+    try {
+        await client.post('/tasks', tasks);
+        console.log("📡 Tareas guardadas en servidor");
+    } catch (e) {
+        console.error('❌ Error guardando tareas en servidor:', e);
+        throw new Error('No se pudieron guardar las tareas en el servidor');
+    }
 }
 
 
@@ -917,7 +988,7 @@ async function deleteTask(index) {
  * @param {SubmitEvent} e - Evento de envío del formulario.
  * @returns {void}
  */
-taskForm.addEventListener('submit', (e) => {
+taskForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const taskText = taskInput.value.trim();
     
@@ -933,7 +1004,7 @@ taskForm.addEventListener('submit', (e) => {
         notes: []
     }));
 
-    saveTasks();
+    await saveTasks();
     renderTasks();
     taskInput.value = '';
 });
@@ -987,19 +1058,19 @@ if (taskPrioritySelector) {
 if (sortSelect) sortSelect.addEventListener('change', () => renderTasks());
 
 if (completeAllBtn) {
-    completeAllBtn.addEventListener('click', () => {
+    completeAllBtn.addEventListener('click', async () => {
         if (!tasks.length) return;
         tasks = tasks.map(t => ({ ...t, completed: true }));
-        saveTasks();
+        await saveTasks();
         renderTasks();
     });
 }
 
 if (deleteAllBtn) {
-    deleteAllBtn.addEventListener('click', () => {
+    deleteAllBtn.addEventListener('click', async () => {
         if (!tasks.length) return;
         tasks = [];
-        saveTasks();
+        await saveTasks();
         renderTasks();
     });
 }
@@ -1050,12 +1121,12 @@ function closeNotesModal() {
     notesModal.classList.add('hidden');
 }
 
-function addNoteToTask(taskId, noteText) {
+async function addNoteToTask(taskId, noteText) {
     const task = findTaskById(taskId);
     if (!task) return;
     if (!Array.isArray(task.notes)) task.notes = [];
     task.notes.push(noteText);
-    saveTasks();
+    await saveTasks();
 }
 
 if (notesOpenBtn) {
@@ -1140,35 +1211,89 @@ if (reminderModal) {
     });
 }
 
+// Event listener global para prevenir cualquier submit no deseado
+document.addEventListener('submit', (event) => {
+    if (event.target && event.target.id === 'task-form') {
+        console.log("🛡️ Submit del formulario de tareas interceptado");
+        return; // Dejar pasar el submit del formulario de tareas
+    }
+    
+    // Prevenir cualquier otro submit
+    console.log("🛡️ Submit no deseado prevenido");
+    event.preventDefault();
+    event.stopPropagation();
+});
+
+// Event listener específico para el botón de recordatorios con captura
 if (reminderAcceptBtn) {
-    reminderAcceptBtn.addEventListener('click', async () => {
-        console.log("🔔 Botón de recordatorio pulsado");
-        if (!reminderTaskSelect || !reminderFrequency) return;
-        const taskId = reminderTaskSelect.value;
-        const frequency = reminderFrequency.value;
-
-        console.log("📋 Datos del recordatorio:", { taskId, frequency });
-
-        if (!taskId || !frequency) return;
-
-        // Verificar si ya existe un recordatorio para esta tarea y frecuencia
-        const existingIndex = reminders.findIndex(r => r.taskId === taskId && r.frequency === frequency);
-        if (existingIndex === -1) {
-            console.log("➕ Añadiendo nuevo recordatorio al array");
-            reminders.push({ taskId, frequency });
-            console.log("💾 Array de recordatorios actualizado:", reminders);
+    console.log("🔔 Botón de recordatorio encontrado, añadiendo event listener...");
+    
+    // VERSIÓN DIAGNÓSTICO TOTAL
+    reminderAcceptBtn.onclick = async (event) => {
+        console.log("🔔 DIAGNÓSTICO - Botón pulsado");
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        
+        try {
+            console.log("🔔 DIAGNÓSTICO - Paso 1: Verificar elementos");
+            if (!reminderTaskSelect || !reminderFrequency) {
+                console.log("❌ Faltan elementos del modal");
+                return false;
+            }
             
-            await saveReminders(); // Guardar en servidor/localStorage
-            console.log("💾 Recordatorios guardados permanentemente");
-            
-            startReminder(taskId, frequency);
-            console.log("⏰ Recordatorio iniciado localmente");
-        } else {
-            console.log("⚠️ El recordatorio ya existe");
+            console.log("🔔 DIAGNÓSTICO - Paso 2: Obtener datos");
+            const taskId = reminderTaskSelect.value;
+            const frequency = reminderFrequency.value;
+
+            console.log("📋 Datos del recordatorio:", { taskId, frequency });
+
+            if (!taskId || !frequency) {
+                console.log("❌ Datos incompletos");
+                return false;
+            }
+
+            console.log("🔔 DIAGNÓSTICO - Paso 3: Verificar duplicados");
+            // Verificar si ya existe un recordatorio para esta tarea y frecuencia
+            const existingIndex = reminders.findIndex(r => r.taskId === taskId && r.frequency === frequency);
+            if (existingIndex === -1) {
+                console.log("🔔 DIAGNÓSTICO - Paso 4: Añadir recordatorio");
+                reminders.push({ taskId, frequency });
+                console.log("💾 Array de recordatorios actualizado:", reminders);
+                
+                console.log("🔔 DIAGNÓSTICO - Paso 5: Guardar en servidor");
+                try {
+                    await saveReminders(); // Guardar en servidor
+                    console.log("💾 Recordatorios guardados permanentemente");
+                    alert("✅ Recordatorio guardado. Refresca la página para activarlo.");
+                } catch (error) {
+                    console.error("❌ Error guardando recordatorios:", error);
+                    alert("❌ Error guardando recordatorios. Por favor, inténtalo de nuevo.");
+                    return false;
+                }
+                
+                console.log("🔔 DIAGNÓSTICO - Paso 6: Cerrar modal");
+                // Cerrar manualmente para evitar problemas
+                if (reminderModal) {
+                    reminderModal.classList.add('hidden');
+                    console.log("🔔 Modal cerrado correctamente");
+                }
+                
+                console.log("🔔 DIAGNÓSTICO - Proceso completado");
+                return false;
+            } else {
+                console.log("⚠️ El recordatorio ya existe");
+                alert("⚠️ Este recordatorio ya existe.");
+                return false;
+            }
+        } catch (error) {
+            console.error("❌ ERROR GENERAL EN DIAGNÓSTICO:", error);
+            alert("❌ Error inesperado: " + error.message);
+            return false;
         }
-
-        closeReminderModal();
-    });
+    };
+} else {
+    console.log("❌ Botón de recordatorio NO encontrado");
 }
 
 if (notesCancelBtn) {
