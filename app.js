@@ -1,4 +1,4 @@
-import client from './api/client.js';
+import client from './client.js';
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const tasksContainer = document.getElementById('tasks-container');
@@ -29,6 +29,7 @@ const reminderAcceptBtn = document.getElementById('reminder-accept-btn');
 const reminderCancelBtn = document.getElementById('reminder-cancel-btn');
 const reminderCloseIcon = document.getElementById('reminder-close-icon');
 const reminderWarning = document.getElementById('reminder-warning');
+
 
 // Tema (claro/oscuro)
 const html = document.documentElement;
@@ -1098,52 +1099,3 @@ tasksContainer.addEventListener('click', (e) => {
         renderTasks();
     }
 });
-
-
-// --- FUNCIÓN DE CONTROL DE RED (FASE D) ---
-async function syncAppWithServer() {
-    const networkStatus = document.getElementById('network-status');
-    if (networkStatus) {
-        networkStatus.style.display = 'block';
-        networkStatus.style.padding = '10px';
-        networkStatus.style.textAlign = 'center';
-        networkStatus.textContent = "⏳ Sincronizando datos...";
-    }
-
-    try {
-        // Pedimos todo al servidor al mismo tiempo
-        const [tasksRes, settingsRes] = await Promise.all([
-            client.get('/tasks'),
-            client.get('/settings')
-        ]);
-
-        // 1. Cargamos las tareas en tu array global
-        tasks = tasksRes.data; 
-
-        // 2. Aplicamos el modo oscuro si el servidor dice que sí
-        if (settingsRes.data.darkMode) {
-            html.classList.add('dark-mode');
-            if (themeIcon) themeIcon.textContent = 'light_mode';
-            if (themeLabel) themeLabel.textContent = 'Modo Claro';
-        }
-
-        // 3. Ocultamos el mensaje de carga
-        if (networkStatus) networkStatus.style.display = 'none';
-
-        // 4. Pintamos las tareas y activamos recordatorios
-        // Nota: Si tu función para dibujar se llama distinto de 'renderTasks', cámbialo aquí
-        if (typeof renderTasks === 'function') renderTasks(); 
-        startAllReminders();
-
-    } catch (error) {
-        console.error("Error al sincronizar:", error);
-        if (networkStatus) {
-            networkStatus.textContent = "❌ Error: No se pudo conectar con el servidor.";
-            networkStatus.style.color = "red";
-            networkStatus.style.backgroundColor = "#fee2e2";
-        }
-    }
-}
-
-// Iniciar proceso cuando el HTML esté listo
-document.addEventListener('DOMContentLoaded', syncAppWithServer);

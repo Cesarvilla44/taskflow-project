@@ -2,12 +2,16 @@ const express = require('express');
 const app = express();
 const taskRoutes = require('./routes/task.routes');
 const settingsRoutes = require('./routes/settings.routes'); 
+const cors = require('cors'); // Arriba con los otros require
+
+
 
 const PORT = 3000;
 
 // Middleware para leer JSON
 app.use(express.json());
 
+app.use(cors()); // Justo antes de las rutas
 // --- RUTAS ---
 
 // Ruta de bienvenida
