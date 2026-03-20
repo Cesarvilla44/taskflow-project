@@ -133,6 +133,9 @@ function showReminderPopup(taskText) {
  */
 function getFrequencyInMs(frequency) {
     switch (frequency) {
+        case '5sec': return 5 * 1000; // Para pruebas rápidas
+        case '10sec': return 10 * 1000; // Para pruebas rápidas
+        case '30sec': return 30 * 1000; // Para pruebas rápidas
         case '10min': return 10 * 60 * 1000;
         case '30min': return 30 * 60 * 1000;
         case '1hour': return 60 * 60 * 1000;
@@ -143,31 +146,45 @@ function getFrequencyInMs(frequency) {
 }
 
 /**
- * Carga los recordatorios desde el servidor.
+ * Carga los recordatorios desde localStorage (modo offline).
  *
  * @returns {Promise<void>}
  */
 async function loadReminders() {
     try {
+        // Intentar cargar desde servidor primero
         const response = await client.get('/reminders'); 
         reminders = response.data || [];
+        console.log("📡 Recordatorios cargados desde servidor");
     } catch (e) {
-        console.error('Error cargando recordatorios:', e);
-        reminders = [];
+        console.log('📴 Servidor no disponible, cargando desde localStorage');
+        // Si falla, cargar desde localStorage
+        const stored = localStorage.getItem('reminders');
+        if (stored) {
+            reminders = JSON.parse(stored);
+            console.log("💾 Recordatorios cargados desde localStorage");
+        } else {
+            reminders = [];
+            console.log("📭 No hay recordatorios guardados");
+        }
     }
 }
 
 /**
- * Guarda los recordatorios en el servidor.
+ * Guarda los recordatorios en localStorage (modo offline).
  *
  * @returns {Promise<void>}
  */
 async function saveReminders() {
     try {
-        // Enviamos todo el array al servidor
+        // Intentar guardar en servidor primero
         await client.post('/reminders', { reminders });
+        console.log("📡 Recordatorios guardados en servidor");
     } catch (e) {
-        console.error('Error guardando recordatorios:', e);
+        console.log('📴 Servidor no disponible, guardando en localStorage');
+        // Si falla, guardar en localStorage
+        localStorage.setItem('reminders', JSON.stringify(reminders));
+        console.log("💾 Recordatorios guardados en localStorage");
     }
 }
 
@@ -179,28 +196,41 @@ async function saveReminders() {
  * @returns {void}
  */
 function startReminder(taskId, frequency) {
+    console.log("🚀 Iniciando recordatorio:", { taskId, frequency });
+    
     const task = findTaskById(taskId);
-    if (!task) return;
+    if (!task) {
+        console.log("❌ Tarea no encontrada:", taskId);
+        return;
+    }
+
+    console.log("✅ Tarea encontrada:", task.text);
 
     const reminderId = `${taskId}-${frequency}`;
     
     // Limpiar recordatorio existente si hay
     if (reminderIntervals.has(reminderId)) {
         clearInterval(reminderIntervals.get(reminderId));
+        reminderIntervals.delete(reminderId);
+        console.log("🧹 Limpiando recordatorio existente:", reminderId);
     }
 
     if (frequency === 'onrestart') {
         // Solo se mostrará al reiniciar la aplicación
+        console.log("🔄 Recordatorio tipo 'onrestart', no se programa intervalo");
         return;
     }
 
     const intervalMs = getFrequencyInMs(frequency);
+    console.log("⏱️ Intervalo en milisegundos:", intervalMs);
     
     const interval = setInterval(() => {
+        console.log("🔔 ¡Recordatorio activado! Mostrando notificación para:", task.text);
         showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
     }, intervalMs);
 
     reminderIntervals.set(reminderId, interval);
+    console.log("✅ Recordatorio programado con ID:", reminderId);
 }
 
 /**
@@ -686,6 +716,52 @@ async function syncAppWithServer() {
             console.log(`🌓 Tema cambiado a: ${isDark ? 'oscuro' : 'claro'}`);
         });
     }
+    
+    // Función de prueba para recordatorios (accesible desde consola)
+    window.testReminder = function() {
+        console.log("🧪 Iniciando prueba manual de recordatorio...");
+        
+        if (tasks.length === 0) {
+            console.log("❌ No hay tareas para probar. Crea una tarea primero.");
+            return;
+        }
+        
+        const testTask = tasks[0];
+        console.log("📋 Usando tarea:", testTask.text);
+        
+        // Probar notificación directamente
+        showNotification('Prueba Manual', `No olvides: ${testTask.text}`);
+        console.log("🔔 Notificación de prueba enviada");
+        
+        // Probar recordatorio programado
+        startReminder(testTask.id, '5sec');
+        console.log("⏰ Recordatorio de prueba programado para 5 segundos");
+    };
+    
+    // Función para probar "Al abrir la aplicación"
+    window.testOnRestart = function() {
+        console.log("� Probando recordatorio 'Al abrir la aplicación'...");
+        
+        if (tasks.length === 0) {
+            console.log("❌ No hay tareas para probar. Crea una tarea primero.");
+            return;
+        }
+        
+        const testTask = tasks[0];
+        console.log("📋 Usando tarea:", testTask.text);
+        
+        // Simular recordatorio "onrestart"
+        setTimeout(() => {
+            console.log("🔔 ¡Recordatorio 'onrestart' activado!");
+            showNotification('Recordatorio al abrir', `No olvides: ${testTask.text}`);
+        }, 2000);
+        
+        console.log("⏰ Recordatorio 'onrestart' programado para 2 segundos");
+    };
+    
+    console.log("💡 Para probar manualmente:");
+    console.log("   - testReminder() (prueba de 5 segundos)");
+    console.log("   - testOnRestart() (prueba 'al abrir')");
 }
 
 // LANZAR
@@ -1043,18 +1119,26 @@ if (reminderModal) {
 
 if (reminderAcceptBtn) {
     reminderAcceptBtn.addEventListener('click', async () => {
+        console.log("🔔 Botón de recordatorio pulsado");
         if (!reminderTaskSelect || !reminderFrequency) return;
         const taskId = reminderTaskSelect.value;
         const frequency = reminderFrequency.value;
+
+        console.log("📋 Datos del recordatorio:", { taskId, frequency });
 
         if (!taskId || !frequency) return;
 
         // Verificar si ya existe un recordatorio para esta tarea y frecuencia
         const existingIndex = reminders.findIndex(r => r.taskId === taskId && r.frequency === frequency);
         if (existingIndex === -1) {
+            console.log("➕ Añadiendo nuevo recordatorio");
             reminders.push({ taskId, frequency });
             await saveReminders(); // Guardar en servidor
+            console.log("💾 Recordatorio guardado en servidor");
             startReminder(taskId, frequency);
+            console.log("⏰ Recordatorio iniciado localmente");
+        } else {
+            console.log("⚠️ El recordatorio ya existe");
         }
 
         closeReminderModal();
