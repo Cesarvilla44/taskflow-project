@@ -1,6 +1,4 @@
-// Si usas módulos de JS
-import axios from 'https://cdn.skypack.dev'; 
-
+// Usamos el axios que acabamos de cargar en el HTML
 const client = axios.create({
   baseURL: 'http://localhost:3000/api/v1',
 });
