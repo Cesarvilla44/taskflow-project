@@ -146,45 +146,45 @@ function getFrequencyInMs(frequency) {
 }
 
 /**
- * Carga los recordatorios desde localStorage (modo offline).
+ * Carga los recordatorios desde el servidor.
  *
  * @returns {Promise<void>}
  */
 async function loadReminders() {
     try {
-        // Intentar cargar desde servidor primero
         const response = await client.get('/reminders'); 
-        reminders = response.data || [];
-        console.log("📡 Recordatorios cargados desde servidor");
+        console.log("📡 Respuesta cruda del servidor:", response);
+        console.log("📡 response.data:", response.data);
+        console.log("📡 typeof response.data:", typeof response.data);
+        console.log("📡 Array.isArray(response.data):", Array.isArray(response.data));
+        
+        // El servidor devuelve { data: [...] }, así que accedemos a response.data.data
+        const remindersData = response.data?.data || response.data || [];
+        console.log("📡 remindersData:", remindersData);
+        console.log("📡 typeof remindersData:", typeof remindersData);
+        console.log("📡 Array.isArray(remindersData):", Array.isArray(remindersData));
+        
+        reminders = Array.isArray(remindersData) ? remindersData : [];
+        console.log("📡 Recordatorios cargados desde servidor:", reminders.length);
     } catch (e) {
-        console.log('📴 Servidor no disponible, cargando desde localStorage');
-        // Si falla, cargar desde localStorage
-        const stored = localStorage.getItem('reminders');
-        if (stored) {
-            reminders = JSON.parse(stored);
-            console.log("💾 Recordatorios cargados desde localStorage");
-        } else {
-            reminders = [];
-            console.log("📭 No hay recordatorios guardados");
-        }
+        console.error('❌ Error cargando recordatorios desde servidor:', e);
+        reminders = [];
+        console.log("📭 No se pudieron cargar recordatorios, array vacío");
     }
 }
 
 /**
- * Guarda los recordatorios en localStorage (modo offline).
+ * Guarda los recordatorios en el servidor.
  *
  * @returns {Promise<void>}
  */
 async function saveReminders() {
     try {
-        // Intentar guardar en servidor primero
         await client.post('/reminders', { reminders });
         console.log("📡 Recordatorios guardados en servidor");
     } catch (e) {
-        console.log('📴 Servidor no disponible, guardando en localStorage');
-        // Si falla, guardar en localStorage
-        localStorage.setItem('reminders', JSON.stringify(reminders));
-        console.log("💾 Recordatorios guardados en localStorage");
+        console.error('❌ Error guardando recordatorios en servidor:', e);
+        throw new Error('No se pudieron guardar los recordatorios en el servidor');
     }
 }
 
@@ -255,20 +255,31 @@ function stopReminder(taskId, frequency) {
  * @returns {Promise<void>}
  */
 async function startAllReminders() {
-    await loadReminders(); // Cargar desde servidor
+    console.log("🔄 Iniciando todos los recordatorios guardados...");
+    await loadReminders(); // Cargar desde servidor/localStorage
+    console.log("📋 Recordatorios cargados:", reminders.length);
+    
     reminders.forEach(reminder => {
         const task = findTaskById(reminder.taskId);
+        console.log("🔍 Procesando recordatorio:", reminder);
+        
         if (task && !task.completed) {
             if (reminder.frequency === 'onrestart') {
                 // Mostrar notificación inmediata
+                console.log("🚀 Activando recordatorio 'onrestart' para:", task.text);
                 setTimeout(() => {
                     showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
                 }, 2000);
             } else {
+                console.log("⏰ Iniciando recordatorio programado:", reminder.frequency, "para:", task.text);
                 startReminder(reminder.taskId, reminder.frequency);
             }
+        } else {
+            console.log("⏭️ Saltando recordatorio - tarea no encontrada o completada");
         }
     });
+    
+    console.log("✅ Todos los recordatorios iniciados");
 }
 
 /**
@@ -625,14 +636,81 @@ function applyTheme(isDark) {
  * @returns {void}
  */
 /**
+ * Configura preferencias simples usando solo endpoints existentes.
+ *
+ * @returns {void}
+ */
+function setupSimplePreferences() {
+    console.log("✅ Preferencias básicas configuradas (modo oscuro via /settings)");
+    
+    // Por ahora, solo guardamos el modo oscuro en /settings
+    // Las otras preferencias (filtros, búsqueda) se pueden añadir 
+    // cuando el servidor tenga los endpoints correspondientes
+    
+    console.log("💡 Para guardar filtros y búsqueda, el servidor necesita endpoint /preferences");
+}
+
+/**
+ * Configura el guardado automático de preferencias de usuario.
+ *
+ * @param {Object} currentPreferences - Preferencias actuales del usuario
+ * @returns {void}
+ */
+function setupAutoSavePreferences(currentPreferences) {
+    let saveTimeout;
+    
+    // Función para guardar preferencias con debounce
+    const savePreferences = async () => {
+        try {
+            const preferences = {
+                ...currentPreferences,
+                darkMode: html.classList.contains('dark'),
+                filters: {
+                    search: searchInput?.value || '',
+                    category: categoryFilter?.value || 'all',
+                    priority: priorityFilter?.value || 'all',
+                    sort: sortSelect?.value || 'newest'
+                },
+                lastUpdated: Date.now()
+            };
+            
+            await client.post('/user/preferences', preferences);
+            console.log("💾 Preferencias guardadas automáticamente");
+        } catch (err) {
+            console.error("❌ Error guardando preferencias:", err);
+        }
+    };
+    
+    // Event listeners para filtros con debounce
+    if (searchInput) {
+        searchInput.addEventListener('input', () => {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(savePreferences, 1000); // Guardar después de 1s de inactividad
+        });
+    }
+    
+    if (categoryFilter) {
+        categoryFilter.addEventListener('change', savePreferences);
+    }
+    
+    if (priorityFilter) {
+        priorityFilter.addEventListener('change', savePreferences);
+    }
+    
+    if (sortSelect) {
+        sortSelect.addEventListener('change', savePreferences);
+    }
+    
+    console.log("✅ Guardado automático de preferencias configurado");
+}
+
+/**
  * INICIO DE LA APP: Sincronización con el Servidor
  */
 async function syncAppWithServer() {
     console.log("🚀 ¡La aplicación ha arrancado correctamente!");
     const statusEl = document.getElementById('network-status');
     
-    // MODO OFFICIAL: Descomenta esto cuando el servidor esté encendido
-    /*
     // 1. ESTADO DE CARGA
     if (statusEl) {
         statusEl.style.display = 'block';
@@ -641,7 +719,7 @@ async function syncAppWithServer() {
     }
 
     try {
-        // Pedimos Tareas y Ajustes al servidor Node.js
+        // Pedimos solo Tareas y Ajustes (endpoints que existen)
         const [tasksRes, settingsRes] = await Promise.all([
             client.get('/tasks'),
             client.get('/settings')
@@ -650,118 +728,63 @@ async function syncAppWithServer() {
         // 2. ESTADO DE ÉXITO
         tasks = tasksRes.data; // El array global ahora tiene los datos del server
 
-        // Aplicamos el Modo Oscuro si el servidor dice que sí
-        if (settingsRes.data.darkMode) {
-            html.classList.add('dark-mode');
-            themeLabel.textContent = 'claro';
+        // Aplicar preferencias desde settings
+        const settings = settingsRes.data || {};
+        console.log("📋 Configuración cargada:", settings);
+
+        // Modo oscuro
+        if (settings.darkMode) {
+            html.classList.add('dark');
+            themeLabel.textContent = 'Claro';
             themeIcon.textContent = '☀️';
+            console.log("🌙 Modo oscuro aplicado");
         }
 
         if (statusEl) statusEl.style.display = 'none';
 
         // Dibujamos todo lo que ha llegado
         renderTasks(); 
-        startAllReminders();
+        await startAllReminders(); // Cargar recordatorios desde servidor
+        console.log("✅ Aplicación sincronizada con servidor");
+        
+        // Configurar botón de tema para servidor
+        if (themeBtn) {
+            themeBtn.addEventListener('click', async () => {
+                const isDark = html.classList.toggle('dark');
+                
+                // Actualizar UI
+                themeLabel.textContent = isDark ? 'Claro' : 'Oscuro';
+                themeIcon.textContent = isDark ? '☀️' : '🌙';
+                
+                // Guardar en servidor
+                try {
+                    await client.post('/settings', { darkMode: isDark });
+                    console.log(`🌓 Tema guardado en servidor: ${isDark ? 'oscuro' : 'claro'}`);
+                } catch (err) {
+                    console.error("❌ Error guardando tema en servidor:", err);
+                    // Revertir cambio si falla
+                    html.classList.toggle('dark');
+                    themeLabel.textContent = isDark ? 'Oscuro' : 'Claro';
+                    themeIcon.textContent = isDark ? '🌙' : '☀️';
+                }
+            });
+        }
+
+        // Configurar guardado simple de preferencias (sin endpoint específico)
+        setupSimplePreferences();
 
     } catch (error) {
         // 3. ESTADO DE ERROR
-        console.error("Error de conexión:", error);
+        console.error("❌ Error de conexión con servidor:", error);
         if (statusEl) {
             statusEl.className = 'error';
-            statusEl.textContent = "❌ Error: El servidor de TaskFlow no responde.";
-        }
-    }
-    */
-
-    // MODO TEMPORAL OFFLINE (para probar botones)
-    console.log("📴 Modo offline activado - Cargando desde localStorage");
-    
-    // Cargar desde localStorage temporalmente
-    const storedTasks = JSON.parse(localStorage.getItem('tasks'));
-    if (Array.isArray(storedTasks)) {
-        tasks = storedTasks.map(normalizeTask);
-    }
-    
-    // Cargar recordatorios desde localStorage
-    const storedReminders = JSON.parse(localStorage.getItem('reminders'));
-    if (Array.isArray(storedReminders)) {
-        reminders = storedReminders;
-    }
-    
-    // Cargar tema desde localStorage
-    const storedTheme = localStorage.getItem('theme');
-    if (storedTheme === 'dark') {
-        html.classList.add('dark');
-        themeLabel.textContent = 'Claro';
-        themeIcon.textContent = '☀️';
-    }
-    
-    // Renderizar todo
-    renderTasks();
-    await startAllReminders(); // Ahora es asíncrono
-    console.log("✅ Aplicación cargada en modo offline - Botones deberían funcionar");
-    
-    // Configurar botón de tema para modo offline
-    if (themeBtn) {
-        themeBtn.addEventListener('click', () => {
-            const isDark = html.classList.toggle('dark');
-            
-            // Actualizar UI
-            themeLabel.textContent = isDark ? 'Claro' : 'Oscuro';
-            themeIcon.textContent = isDark ? '☀️' : '🌙';
-            
-            // Guardar en localStorage (modo offline)
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            
-            console.log(`🌓 Tema cambiado a: ${isDark ? 'oscuro' : 'claro'}`);
-        });
-    }
-    
-    // Función de prueba para recordatorios (accesible desde consola)
-    window.testReminder = function() {
-        console.log("🧪 Iniciando prueba manual de recordatorio...");
-        
-        if (tasks.length === 0) {
-            console.log("❌ No hay tareas para probar. Crea una tarea primero.");
-            return;
+            statusEl.textContent = "❌ Error: El servidor de TaskFlow no responde. La aplicación requiere conexión.";
         }
         
-        const testTask = tasks[0];
-        console.log("📋 Usando tarea:", testTask.text);
-        
-        // Probar notificación directamente
-        showNotification('Prueba Manual', `No olvides: ${testTask.text}`);
-        console.log("🔔 Notificación de prueba enviada");
-        
-        // Probar recordatorio programado
-        startReminder(testTask.id, '5sec');
-        console.log("⏰ Recordatorio de prueba programado para 5 segundos");
-    };
-    
-    // Función para probar "Al abrir la aplicación"
-    window.testOnRestart = function() {
-        console.log("� Probando recordatorio 'Al abrir la aplicación'...");
-        
-        if (tasks.length === 0) {
-            console.log("❌ No hay tareas para probar. Crea una tarea primero.");
-            return;
-        }
-        
-        const testTask = tasks[0];
-        console.log("📋 Usando tarea:", testTask.text);
-        
-        // Simular recordatorio "onrestart"
-        setTimeout(() => {
-            console.log("🔔 ¡Recordatorio 'onrestart' activado!");
-            showNotification('Recordatorio al abrir', `No olvides: ${testTask.text}`);
-        }, 2000);
-        
-        console.log("⏰ Recordatorio 'onrestart' programado para 2 segundos");
-    };
-    
-    console.log("💡 Para probar manualmente:");
-    console.log("   - testReminder() (prueba de 5 segundos)");
-    console.log("   - testOnRestart() (prueba 'al abrir')");
+        // Deshabilitar la aplicación si no hay servidor
+        document.body.style.opacity = '0.5';
+        document.body.style.pointerEvents = 'none';
+    }
 }
 
 // LANZAR
@@ -1131,10 +1154,13 @@ if (reminderAcceptBtn) {
         // Verificar si ya existe un recordatorio para esta tarea y frecuencia
         const existingIndex = reminders.findIndex(r => r.taskId === taskId && r.frequency === frequency);
         if (existingIndex === -1) {
-            console.log("➕ Añadiendo nuevo recordatorio");
+            console.log("➕ Añadiendo nuevo recordatorio al array");
             reminders.push({ taskId, frequency });
-            await saveReminders(); // Guardar en servidor
-            console.log("💾 Recordatorio guardado en servidor");
+            console.log("💾 Array de recordatorios actualizado:", reminders);
+            
+            await saveReminders(); // Guardar en servidor/localStorage
+            console.log("💾 Recordatorios guardados permanentemente");
+            
             startReminder(taskId, frequency);
             console.log("⏰ Recordatorio iniciado localmente");
         } else {

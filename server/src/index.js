@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const taskRoutes = require('./routes/task.routes');
 const settingsRoutes = require('./routes/settings.routes'); 
+const reminderRoutes = require('./routes/reminder.routes');
 const cors = require('cors'); // Arriba con los otros require
 
 
@@ -24,6 +25,9 @@ app.use('/api/v1/tasks', taskRoutes);
 
 // 2. MONTAJE DE LA API DE AJUSTES (Para el modo oscuro)
 app.use('/api/v1/settings', settingsRoutes);
+
+// 3. MONTAJE DE LA API DE RECORDATORIOS
+app.use('/api/v1/reminders', reminderRoutes);
 
 
 // --- MANEJO DE ERRORES (Fase C: Robustez) ---
