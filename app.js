@@ -103,9 +103,9 @@ function showReminderPopup(taskText) {
     popup.innerHTML = `
         <div class="reminder-popup-header">
             <div class="reminder-popup-icon">⏰</div>
-            <h3 class="reminder-popup-title">¡Recordatorio!</h3>
+            <h3 class="reminder-popup-title">No olvides:</h3>
         </div>
-        <div class="reminder-popup-task">No olvides: ${taskText}</div>
+        <div class="reminder-popup-task">${taskText}</div>
         <button class="reminder-popup-close" onclick="this.parentElement.remove()">
             Entendido
         </button>
