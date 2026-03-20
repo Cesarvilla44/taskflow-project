@@ -14,11 +14,12 @@ const getReminders = async (req, res) => {
 // POST /api/v1/reminders - Guardar recordatorios
 const postReminders = async (req, res) => {
     try {
-        const { reminders } = req.body;
+        // Aceptar tanto { reminders: [...] } como directamente [...]
+        const reminders = req.body.reminders || req.body;
         
         if (!Array.isArray(reminders)) {
             return res.status(400).json({ 
-                message: 'El campo reminders debe ser un array' 
+                message: 'Se debe enviar un array de recordatorios' 
             });
         }
         
