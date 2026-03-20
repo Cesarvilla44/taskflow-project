@@ -1,3 +1,4 @@
+import client from './api/client.js';
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const tasksContainer = document.getElementById('tasks-container');
@@ -141,28 +142,31 @@ function getFrequencyInMs(frequency) {
 }
 
 /**
- * Guarda los recordatorios en localStorage.
+ * Carga los recordatorios desde el servidor.
  *
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function saveReminders() {
-    localStorage.setItem('reminders', JSON.stringify(reminders));
+async function loadReminders() {
+    try {
+        const response = await client.get('/reminders'); 
+        reminders = response.data || [];
+    } catch (e) {
+        console.error('Error cargando recordatorios:', e);
+        reminders = [];
+    }
 }
 
 /**
- * Carga los recordatorios desde localStorage.
+ * Guarda los recordatorios en el servidor.
  *
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function loadReminders() {
+async function saveReminders() {
     try {
-        const stored = localStorage.getItem('reminders');
-        if (stored) {
-            reminders = JSON.parse(stored);
-        }
+        // Enviamos todo el array al servidor
+        await client.post('/reminders', { reminders });
     } catch (e) {
-        console.error('Error loading reminders:', e);
-        reminders = [];
+        console.error('Error guardando recordatorios:', e);
     }
 }
 
@@ -588,49 +592,54 @@ function applyTheme(isDark) {
  *
  * @returns {void}
  */
-window.addEventListener('DOMContentLoaded', () => {
-    // Tareas guardadas
-    const storedTasks = JSON.parse(localStorage.getItem('tasks'));
-    if (Array.isArray(storedTasks)) {
-        tasks = storedTasks.map(normalizeTask);
-    }
-
-    // Recordatorios guardados
-    loadReminders();
-
-    // Tema guardado
-    const storedTheme = localStorage.getItem('theme');
-    const initialIsDark =
-        storedTheme === 'dark'
-            ? true
-            : storedTheme === 'light'
-                ? false
-                : html.classList.contains('dark');
-
-    // Aplica el tema inicial (guardado o el ya presente en el DOM)
-    applyTheme(initialIsDark);
-
-    if (themeBtn) {
-        themeBtn.addEventListener('click', () => {
-            const nextIsDark = !html.classList.contains('dark');
-            applyTheme(nextIsDark);
-        });
-    }
-
-    // Restaura filtros/búsqueda/orden si existen
-    const restoredView = loadViewState();
-    if (restoredView) {
-        if (searchInput) searchInput.value = restoredView.q;
-        if (categoryFilter) categoryFilter.value = restoredView.category;
-        if (priorityFilter) priorityFilter.value = restoredView.priority;
-        if (sortSelect) sortSelect.value = restoredView.sort;
-    }
-
-    renderTasks();
+/**
+ * INICIO DE LA APP: Sincronización con el Servidor
+ */
+async function syncAppWithServer() {
+    const statusEl = document.getElementById('network-status');
     
-    // Inicia todos los recordatorios
-    startAllReminders();
-});
+    // 1. ESTADO DE CARGA
+    if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.className = 'loading';
+        statusEl.textContent = "⏳ Conectando con TaskFlow Server...";
+    }
+
+    try {
+        // Pedimos Tareas y Ajustes al servidor Node.js
+        const [tasksRes, settingsRes] = await Promise.all([
+            client.get('/tasks'),
+            client.get('/settings')
+        ]);
+
+        // 2. ESTADO DE ÉXITO
+        tasks = tasksRes.data; // El array global ahora tiene los datos del server
+
+        // Aplicamos el Modo Oscuro si el servidor dice que sí
+        if (settingsRes.data.darkMode) {
+            html.classList.add('dark-mode');
+            themeLabel.textContent = 'claro';
+            themeIcon.textContent = '☀️';
+        }
+
+        if (statusEl) statusEl.style.display = 'none';
+
+        // Dibujamos todo lo que ha llegado
+        renderTasks(); 
+        startAllReminders();
+
+    } catch (error) {
+        // 3. ESTADO DE ERROR
+        console.error("Error de conexión:", error);
+        if (statusEl) {
+            statusEl.className = 'error';
+            statusEl.textContent = "❌ Error: El servidor de TaskFlow no responde.";
+        }
+    }
+}
+
+// LANZAR
+document.addEventListener('DOMContentLoaded', syncAppWithServer);
 
 
 /**
@@ -1089,3 +1098,52 @@ tasksContainer.addEventListener('click', (e) => {
         renderTasks();
     }
 });
+
+
+// --- FUNCIÓN DE CONTROL DE RED (FASE D) ---
+async function syncAppWithServer() {
+    const networkStatus = document.getElementById('network-status');
+    if (networkStatus) {
+        networkStatus.style.display = 'block';
+        networkStatus.style.padding = '10px';
+        networkStatus.style.textAlign = 'center';
+        networkStatus.textContent = "⏳ Sincronizando datos...";
+    }
+
+    try {
+        // Pedimos todo al servidor al mismo tiempo
+        const [tasksRes, settingsRes] = await Promise.all([
+            client.get('/tasks'),
+            client.get('/settings')
+        ]);
+
+        // 1. Cargamos las tareas en tu array global
+        tasks = tasksRes.data; 
+
+        // 2. Aplicamos el modo oscuro si el servidor dice que sí
+        if (settingsRes.data.darkMode) {
+            html.classList.add('dark-mode');
+            if (themeIcon) themeIcon.textContent = 'light_mode';
+            if (themeLabel) themeLabel.textContent = 'Modo Claro';
+        }
+
+        // 3. Ocultamos el mensaje de carga
+        if (networkStatus) networkStatus.style.display = 'none';
+
+        // 4. Pintamos las tareas y activamos recordatorios
+        // Nota: Si tu función para dibujar se llama distinto de 'renderTasks', cámbialo aquí
+        if (typeof renderTasks === 'function') renderTasks(); 
+        startAllReminders();
+
+    } catch (error) {
+        console.error("Error al sincronizar:", error);
+        if (networkStatus) {
+            networkStatus.textContent = "❌ Error: No se pudo conectar con el servidor.";
+            networkStatus.style.color = "red";
+            networkStatus.style.backgroundColor = "#fee2e2";
+        }
+    }
+}
+
+// Iniciar proceso cuando el HTML esté listo
+document.addEventListener('DOMContentLoaded', syncAppWithServer);

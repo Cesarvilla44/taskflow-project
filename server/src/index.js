@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const taskRoutes = require('./routes/task.routes');
+const settingsRoutes = require('./routes/settings.routes'); 
 
 const PORT = 3000;
 
@@ -16,6 +17,9 @@ app.get('/', (req, res) => {
 
 // Montaje de la API de tareas (todas tus rutas de tareas)
 app.use('/api/v1/tasks', taskRoutes);
+
+// 2. MONTAJE DE LA API DE AJUSTES (Para el modo oscuro)
+app.use('/api/v1/settings', settingsRoutes);
 
 
 // --- MANEJO DE ERRORES (Fase C: Robustez) ---
