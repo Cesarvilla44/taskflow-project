@@ -222,9 +222,10 @@ function stopReminder(taskId, frequency) {
 /**
  * Inicia todos los recordatorios guardados.
  *
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function startAllReminders() {
+async function startAllReminders() {
+    await loadReminders(); // Cargar desde servidor
     reminders.forEach(reminder => {
         const task = findTaskById(reminder.taskId);
         if (task && !task.completed) {
@@ -597,8 +598,11 @@ function applyTheme(isDark) {
  * INICIO DE LA APP: Sincronización con el Servidor
  */
 async function syncAppWithServer() {
+    console.log("🚀 ¡La aplicación ha arrancado correctamente!");
     const statusEl = document.getElementById('network-status');
     
+    // MODO OFFICIAL: Descomenta esto cuando el servidor esté encendido
+    /*
     // 1. ESTADO DE CARGA
     if (statusEl) {
         statusEl.style.display = 'block';
@@ -636,6 +640,51 @@ async function syncAppWithServer() {
             statusEl.className = 'error';
             statusEl.textContent = "❌ Error: El servidor de TaskFlow no responde.";
         }
+    }
+    */
+
+    // MODO TEMPORAL OFFLINE (para probar botones)
+    console.log("📴 Modo offline activado - Cargando desde localStorage");
+    
+    // Cargar desde localStorage temporalmente
+    const storedTasks = JSON.parse(localStorage.getItem('tasks'));
+    if (Array.isArray(storedTasks)) {
+        tasks = storedTasks.map(normalizeTask);
+    }
+    
+    // Cargar recordatorios desde localStorage
+    const storedReminders = JSON.parse(localStorage.getItem('reminders'));
+    if (Array.isArray(storedReminders)) {
+        reminders = storedReminders;
+    }
+    
+    // Cargar tema desde localStorage
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme === 'dark') {
+        html.classList.add('dark');
+        themeLabel.textContent = 'Claro';
+        themeIcon.textContent = '☀️';
+    }
+    
+    // Renderizar todo
+    renderTasks();
+    await startAllReminders(); // Ahora es asíncrono
+    console.log("✅ Aplicación cargada en modo offline - Botones deberían funcionar");
+    
+    // Configurar botón de tema para modo offline
+    if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+            const isDark = html.classList.toggle('dark');
+            
+            // Actualizar UI
+            themeLabel.textContent = isDark ? 'Claro' : 'Oscuro';
+            themeIcon.textContent = isDark ? '☀️' : '🌙';
+            
+            // Guardar en localStorage (modo offline)
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            
+            console.log(`🌓 Tema cambiado a: ${isDark ? 'oscuro' : 'claro'}`);
+        });
     }
 }
 
@@ -733,9 +782,9 @@ function saveTasks() {
  * También elimina los recordatorios asociados a la tarea.
  *
  * @param {number|string} index - Índice de la tarea en el array `tasks`.
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function deleteTask(index) {
+async function deleteTask(index) {
     const numericIndex = Number(index);
 
     // Si el índice no es un número válido, no hacemos nada
@@ -752,7 +801,7 @@ function deleteTask(index) {
 
     // Eliminar los recordatorios del array
     reminders = reminders.filter(r => r.taskId !== task.id);
-    saveReminders();
+    await saveReminders(); // Guardar en servidor
 
     // Eliminar la tarea
     tasks.splice(numericIndex, 1);
@@ -993,7 +1042,7 @@ if (reminderModal) {
 }
 
 if (reminderAcceptBtn) {
-    reminderAcceptBtn.addEventListener('click', () => {
+    reminderAcceptBtn.addEventListener('click', async () => {
         if (!reminderTaskSelect || !reminderFrequency) return;
         const taskId = reminderTaskSelect.value;
         const frequency = reminderFrequency.value;
@@ -1004,7 +1053,7 @@ if (reminderAcceptBtn) {
         const existingIndex = reminders.findIndex(r => r.taskId === taskId && r.frequency === frequency);
         if (existingIndex === -1) {
             reminders.push({ taskId, frequency });
-            saveReminders();
+            await saveReminders(); // Guardar en servidor
             startReminder(taskId, frequency);
         }
 
