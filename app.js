@@ -1246,6 +1246,22 @@ if (notesOpenBtn) {
     });
 }
 
+// Event listeners para botones flotantes móviles
+const notesOpenBtnMobile = document.getElementById('notes-open-btn');
+const reminderOpenBtnMobile = document.getElementById('reminder-open-btn');
+
+if (notesOpenBtnMobile) {
+    notesOpenBtnMobile.addEventListener('click', () => {
+        openNotesModal();
+    });
+}
+
+if (reminderOpenBtnMobile) {
+    reminderOpenBtnMobile.addEventListener('click', () => {
+        openReminderModal();
+    });
+}
+
 // --- Recordatorios ---
 
 function openReminderModal() {
