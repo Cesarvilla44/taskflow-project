@@ -1,1 +1,6 @@
-[]
+[
+  {
+    "taskId": "mn313xud-5ry5gm",
+    "frequency": "onrestart"
+  }
+]
