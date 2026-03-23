@@ -133,9 +133,6 @@ function showReminderPopup(taskText) {
  */
 function getFrequencyInMs(frequency) {
     switch (frequency) {
-        case '5sec': return 5 * 1000; // Para pruebas rápidas
-        case '10sec': return 10 * 1000; // Para pruebas rápidas
-        case '30sec': return 30 * 1000; // Para pruebas rápidas
         case '10min': return 10 * 60 * 1000;
         case '30min': return 30 * 60 * 1000;
         case '1hour': return 60 * 60 * 1000;
