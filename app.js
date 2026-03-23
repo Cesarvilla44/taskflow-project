@@ -1355,7 +1355,7 @@ if (reminderAcceptBtn) {
                             startReminder(taskId, frequency);
                         }
                         
-                        alert("✅ Recordatorio CREADO Y FORZADO (incluso si falló el servidor)");
+                        alert("✅ Recordatorio creado");
                     } else {
                         alert("❌ No se encontró la tarea, pero el recordatorio se intentó crear");
                     }
