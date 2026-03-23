@@ -1,4 +1,9 @@
 import client from './client.js';
+
+// DIAGNÓSTICO - Verificar que el script se carga
+console.log("🚀 APP.JS CARGADO - Versión 4.4");
+console.log("🚀 DOM listo:", document.readyState);
+
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const tasksContainer = document.getElementById('tasks-container');
@@ -228,6 +233,7 @@ async function saveReminders() {
     }
     
     try {
+        showNetworkStatus('Guardando recordatorio...', 'loading');
         console.log("📡 Enviando al servidor:", reminders);
         console.log("📡 Tipo de datos:", typeof reminders);
         console.log("📡 ¿Es array?:", Array.isArray(reminders));
@@ -237,11 +243,13 @@ async function saveReminders() {
         const response = await client.post('/reminders', { reminders });
         console.log("📡 Respuesta del servidor:", response);
         console.log("📡 Recordatorios guardados en servidor");
+        showNetworkStatus('Recordatorio guardado correctamente', 'success');
     } catch (e) {
         console.error('❌ Error guardando recordatorios desde servidor:', e);
         console.error('❌ Tipo de error:', typeof e);
         console.error('❌ Mensaje de error:', e.message);
         console.error('❌ Stack completo:', e.stack);
+        showNetworkStatus('Error al guardar recordatorio', 'error');
         
         // NO lanzar el error para evitar que se propague
         // throw new Error('No se pudieron guardar los recordatorios en el servidor');
@@ -989,16 +997,52 @@ function renderTasks() {
 
 
 /**
- * Guarda las tareas en el servidor.
+ * Muestra el indicador de conexión con el servidor
  *
- * @returns {Promise<void>}
+ * @param {string} message - Mensaje a mostrar
+ * @param {string} type - Tipo de indicador ('loading', 'success', 'error')
+ * @returns {void}
  */
+function showNetworkStatus(message, type = 'loading') {
+    const statusEl = document.getElementById('network-status');
+    if (!statusEl) return;
+    
+    statusEl.style.display = 'flex';
+    statusEl.className = `network-status ${type}`;
+    
+    const textEl = statusEl.querySelector('.network-text');
+    if (textEl) {
+        textEl.textContent = message;
+    }
+    
+    // Auto-ocultar después de 3 segundos si no es loading
+    if (type !== 'loading') {
+        setTimeout(() => {
+            statusEl.style.display = 'none';
+        }, 3000);
+    }
+}
+
+/**
+ * Oculta el indicador de conexión
+ *
+ * @returns {void}
+ */
+function hideNetworkStatus() {
+    const statusEl = document.getElementById('network-status');
+    if (statusEl) {
+        statusEl.style.display = 'none';
+    }
+}
 async function saveTasks() {
     try {
+        showNetworkStatus('Procesando solicitud...', 'loading');
         await client.post('/tasks', tasks);
         console.log("📡 Tareas guardadas en servidor");
+        showNetworkStatus('Tarea guardada correctamente', 'success');
     } catch (e) {
         console.error('❌ Error guardando tareas en servidor:', e);
+        showNetworkStatus('Error al guardar tarea', 'error');
         throw new Error('No se pudieron guardar las tareas en el servidor');
     }
 }
@@ -1180,11 +1224,20 @@ function closeNotesModal() {
 }
 
 async function addNoteToTask(taskId, noteText) {
-    const task = findTaskById(taskId);
-    if (!task) return;
-    if (!Array.isArray(task.notes)) task.notes = [];
-    task.notes.push(noteText);
-    await saveTasks();
+    try {
+        showNetworkStatus('Guardando anotación...', 'loading');
+        
+        const task = findTaskById(taskId);
+        if (!task) return;
+        if (!Array.isArray(task.notes)) task.notes = [];
+        task.notes.push(noteText);
+        await saveTasks();
+        
+        showNetworkStatus('Anotación guardada correctamente', 'success');
+    } catch (e) {
+        console.error('❌ Error guardando anotación:', e);
+        showNetworkStatus('Error al guardar anotación', 'error');
+    }
 }
 
 if (notesOpenBtn) {

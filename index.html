@@ -500,11 +500,46 @@
     color: white;
 }
 
+/* Indicador de conexión con el servidor */
+.network-status {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(59, 130, 246, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    z-index: 1000;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.dark .network-status {
+    background: rgba(37, 99, 235, 0.9);
+}
+
+.network-spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
     </style>
 </head>
 <body class="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-500 min-h-screen">
-<!-- Añade esto para mostrar errores de red o carga -->
-<div id="network-status" style="display: none; position: fixed; top: 0; width: 100%; z-index: 1000; text-align: center; padding: 10px; font-weight: bold;"></div>
 
     <header class="p-5 flex justify-between items-center border-b bg-white dark:bg-slate-800 dark:border-slate-700 shadow-sm">
         <h1 class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">Flujo de Tareas</h1>
@@ -682,7 +717,7 @@
                 <select id="reminder-frequency" class="notes-select">
                     <option value="5sec">Cada 5 segundos</option>
                     <option value="10sec">Cada 10 segundos</option>
-                    <option value="30sec">Cada 30 segundos (prueba)</option>
+                    <option value="30sec">Cada 30 segundos </option>
                     <option value="10min">Cada 10 minutos</option>
                     <option value="30min">Cada 30 minutos</option>
                     <option value="1hour">Cada hora</option>
@@ -698,8 +733,13 @@
         </div>
     </div>
 
+    <div id="network-status" class="network-status" style="display: none;">
+        <div class="network-spinner"></div>
+        <span class="network-text">Procesando...</span>
+    </div>
+
     <!-- El type="module" es OBLIGATORIO para que el import client funcione -->
-<script src="app.js?v=3.6" type="module"></script>
+<script src="app.js?v=4.7" type="module"></script>
 
 </body>
 </html>
