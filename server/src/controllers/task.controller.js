@@ -5,10 +5,8 @@ let tasks = [];
 
 const getAllTasks = (req, res, next) => {
   try {
-    const serviceTasks = taskService.obtenerTodas();
-    // Si tenemos tareas en memoria (guardadas por POST array), las usamos
-    // Si no, usamos las del servicio
-    const allTasks = tasks.length > 0 ? tasks : serviceTasks;
+    // Siempre usar las tareas del servicio (que ahora están en archivo)
+    const allTasks = taskService.obtenerTodas();
     res.json(allTasks);
   } catch (error) {
     next(error); // Cualquier error inesperado va al manejador global (500)
@@ -16,23 +14,16 @@ const getAllTasks = (req, res, next) => {
 };
 
 const createTask = (req, res, next) => {
-  // Si viene un array, guardamos todas las tareas
+  // Si viene un array, sincronizar todas las tareas (usado para eliminaciones)
   if (Array.isArray(req.body)) {
     try {
-      // Guardar cada tarea individualmente para persistencia
-      const savedTasks = [];
-      req.body.forEach(taskData => {
-        const task = taskService.crearTarea({
-          ...taskData,
-          createdAt: taskData.createdAt || Date.now()
-        });
-        savedTasks.push(task);
-      });
+      // Sincronizar el array completo con el servidor
+      taskService.syncTasks(req.body);
       
       // También actualizar la variable en memoria para compatibilidad
-      tasks = savedTasks;
+      tasks = req.body;
       
-      res.json(savedTasks);
+      res.json(req.body);
       return;
     } catch (error) {
       return next(error);
@@ -65,20 +56,17 @@ const deleteTask = (req, res, next) => {
   const { id } = req.params;
   
   try {
-    // Intentamos eliminar
-    const tareaEliminada = taskService.eliminarTarea(id);
+    // Intentamos eliminar usando el servicio (que ahora persiste en archivo)
+    taskService.eliminarTarea(id);
 
-    // Si el servicio no encontró la tarea (suponiendo que devuelve null o false)
-    if (!tareaEliminada) {
-       // PUNTO 2: Mapeo semántico. Enviamos 'NOT_FOUND' 
-       // para que el index.js devuelva un HTTP 404.
-       return next(new Error('NOT_FOUND'));
-    }
-
+    // Si no hay error, la eliminación fue exitosa
     res.status(204).send(); 
   } catch (error) {
-    // Si el service ya lanza un error con mensaje 'NOT_FOUND', next(error) lo llevará al 404
+    // Si el service lanza un error con mensaje 'NOT_FOUND', next(error) lo llevará al 404
     // Si es cualquier otro error, irá al 500.
+    if (error.message === 'NOT_FOUND') {
+      return next(new Error('NOT_FOUND'));
+    }
     next(error);
   }
 };

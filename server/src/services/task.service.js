@@ -35,6 +35,13 @@ const saveTasksToFile = async () => {
     }
 };
 
+// Sincronizar tareas con un nuevo array (usado cuando el frontend envía array completo)
+const syncTasks = async (newTasks) => {
+    tasks = newTasks;
+    await saveTasksToFile();
+    console.log("🔄 Tareas sincronizadas desde frontend:", tasks.length);
+};
+
 // Cargar tareas al iniciar
 loadTasksFromFile();
 
@@ -71,5 +78,6 @@ const eliminarTarea = (id) => {
 module.exports = {
   obtenerTodas,
   crearTarea,
-  eliminarTarea
+  eliminarTarea,
+  syncTasks
 };
