@@ -19,8 +19,20 @@ const createTask = (req, res, next) => {
   // Si viene un array, guardamos todas las tareas
   if (Array.isArray(req.body)) {
     try {
-      tasks = req.body; // Reemplazamos todo el array
-      res.json(tasks);
+      // Guardar cada tarea individualmente para persistencia
+      const savedTasks = [];
+      req.body.forEach(taskData => {
+        const task = taskService.crearTarea({
+          ...taskData,
+          createdAt: taskData.createdAt || Date.now()
+        });
+        savedTasks.push(task);
+      });
+      
+      // También actualizar la variable en memoria para compatibilidad
+      tasks = savedTasks;
+      
+      res.json(savedTasks);
       return;
     } catch (error) {
       return next(error);

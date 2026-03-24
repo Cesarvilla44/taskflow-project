@@ -357,14 +357,28 @@ async function cleanupOrphanedReminders() {
  */
 async function startAllReminders() {
     console.log("🔄 NUEVA VERSIÓN: Iniciando todos los recordatorios guardados...");
-    console.log("🔄 Versión 1.1 - CON LIMPIEZA AUTOMÁTICA");
+    console.log("🔄 Versión 1.2 - CON ESPERA DE TAREAS");
     await loadReminders(); // Cargar desde servidor/localStorage
     console.log("📋 Recordatorios cargados:", reminders.length);
     console.log("📋 Contenido de reminders:", reminders);
+    
+    // Esperar a que las tareas estén disponibles
+    let attempts = 0;
+    while (tasks.length === 0 && attempts < 10) {
+        console.log(`⏳ Esperando tareas... intento ${attempts + 1}/10`);
+        await new Promise(resolve => setTimeout(resolve, 200));
+        attempts++;
+    }
+    
     console.log("📋 Tareas disponibles:", tasks.map(t => ({ id: t.id, text: t.text, completed: t.completed })));
     
     if (reminders.length === 0) {
         console.log("📭 No hay recordatorios para iniciar");
+        return;
+    }
+    
+    if (tasks.length === 0) {
+        console.log("📭 No hay tareas disponibles para los recordatorios");
         return;
     }
     
@@ -875,7 +889,10 @@ async function syncAppWithServer() {
         // Dibujamos todo lo que ha llegado
         renderTasks(); 
         console.log("🔍 A punto de iniciar recordatorios...");
-        await startAllReminders(); // Cargar recordatorios desde servidor
+        // Esperar un poco a que las tareas se carguen completamente antes de iniciar recordatorios
+        setTimeout(async () => {
+            await startAllReminders(); // Cargar recordatorios desde servidor
+        }, 500);
         console.log("✅ Aplicación sincronizada con servidor");
         
         // Configurar botón de tema para servidor
