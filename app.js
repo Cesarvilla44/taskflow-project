@@ -242,7 +242,19 @@ async function loadReminders() {
         // SI HAY RECORDATORIOS, FORZAR ACTIVACIÓN INMEDIATA
         if (reminders.length > 0) {
             console.log("📡 CARGA INICIAL - HAY RECORDATORIOS, FORZANDO ACTIVACIÓN...");
-            reminders.forEach((reminder, index) => {
+            
+            // FORZAR: Si el servidor no devuelve onrestart, buscar en localStorage
+            const localReminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+            console.log("📡 CARGA INICIAL - Recordatorios locales:", localReminders);
+            
+            // Combinar recordatorios del servidor y locales
+            const allReminders = [...reminders, ...localReminders.filter(lr => 
+                !reminders.find(sr => sr.taskId === lr.taskId && sr.frequency === lr.frequency)
+            )];
+            
+            console.log("📡 CARGA INICIAL - Todos los recordatorios combinados:", allReminders);
+            
+            allReminders.forEach((reminder, index) => {
                 console.log(`📡 CARGA INICIAL - Procesando recordatorio ${index}:`, reminder);
                 console.log(`📡 CARGA INICIAL - Frecuencia del recordatorio: ${reminder.frequency}`);
                 console.log(`📡 CARGA INICIAL - Buscando tarea con ID: ${reminder.taskId}`);
