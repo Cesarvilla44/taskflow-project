@@ -1,5 +1,3 @@
-import client from './client.js';
-
 // DIAGNÓSTICO - Verificar que el script se carga
 console.log("🚀 APP.JS CARGADO - Versión 4.4");
 console.log("🚀 DOM listo:", document.readyState);

@@ -2,5 +2,3 @@
 const client = axios.create({
   baseURL: 'https://taskflow-project-orpin.vercel.app/api/v1',
 });
-
-export default client;
