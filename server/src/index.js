@@ -17,7 +17,7 @@ app.use(cors()); // Justo antes de las rutas
 
 // Ruta de bienvenida
 app.get('/', (req, res) => {
-    res.send('¡Hola! El servidor está funcionando perfectamente 🚀');
+    res.send('¡Hola! El servidor está funcionando perfectamente 🚀 - Updated for Vercel');
 });
 
 // Montaje de la API de tareas (todas tus rutas de tareas)
