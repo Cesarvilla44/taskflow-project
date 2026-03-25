@@ -1134,12 +1134,20 @@ function showNetworkStatus(message, type = 'loading') {
     statusEl.style.display = 'flex';
     statusEl.className = `network-status ${type}`;
     
-    const textEl = statusEl.querySelector('.network-text');
+    // Intentar encontrar el elemento .network-text
+    let textEl = statusEl.querySelector('.network-text');
+    if (!textEl) {
+        console.log('❌ No se encontró el elemento .network-text, intentando crearlo...');
+        // Si no existe, crearlo
+        textEl = document.createElement('span');
+        textEl.className = 'network-text';
+        statusEl.appendChild(textEl);
+        console.log('✅ Elemento .network-text creado');
+    }
+    
     if (textEl) {
         textEl.textContent = message;
         console.log(`✅ Texto actualizado: ${message}`);
-    } else {
-        console.log('❌ No se encontró el elemento .network-text');
     }
     
     // Auto-ocultar después de 3 segundos si no es loading
