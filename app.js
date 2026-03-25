@@ -926,6 +926,19 @@ async function syncAppWithServer() {
             if (backupTasks) {
                 tasks = JSON.parse(backupTasks);
                 console.log("📋 Tareas cargadas desde localStorage backup:", tasks.length);
+                
+                // Asegurar que los IDs sean consistentes para recordatorios
+                // Si hay recordatorios, actualizar sus taskIds para que coincidan
+                if (reminders.length > 0) {
+                    console.log("📋 Actualizando IDs de recordatorios para coincidir con tareas cargadas...");
+                    reminders.forEach(reminder => {
+                        const matchingTask = tasks.find(t => t.text === reminder.taskText || t.id === reminder.taskId);
+                        if (matchingTask) {
+                            reminder.taskId = matchingTask.id;
+                            console.log(`📋 Recordatorio actualizado: ${reminder.taskId} -> ${matchingTask.id}`);
+                        }
+                    });
+                }
             }
         }
         
