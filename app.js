@@ -250,13 +250,17 @@ async function loadReminders() {
                 // SIEMPRE activar recordatorios onrestart (incluso si no hay tarea, para mostrar error)
                 if (reminder.frequency === 'onrestart') {
                     console.log(`📡 CARGA INICIAL - ACTIVANDO RECORDATORIO ONRESTART ${index}`);
-                    if (task && !task.completed) {
-                        console.log(`📡 CARGA INICIAL - Tarea encontrada: ${task.text}`);
-                        setTimeout(() => {
-                            console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
-                            showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
-                        }, 5000); // Aumentado a 5 segundos para dar más tiempo
-                    } else {
+                    
+                    // FORZAR SIEMPRE el recordatorio onrestart
+                    console.log(`📡 CARGA INICIAL - FORZANDO RECORDATORIO ONRESTART (sin verificar tarea)`);
+                    const taskText = task ? task.text : "Tarea no encontrada";
+                    setTimeout(() => {
+                        console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
+                        showNotification('Recordatorio de tarea', `No olvides: ${taskText}`);
+                    }, 3000); // 3 segundos
+                    
+                    // Eliminar recordatorio huérfano si no hay tarea
+                    if (!task) {
                         console.log(`📡 CARGA INICIAL - Recordatorio sin tarea válida, eliminando...`);
                         // Eliminar recordatorio huérfano
                         reminders = reminders.filter(r => r !== reminder);
