@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/src/index.js"
+      "dest": "/server/src/index.js"
     },
     {
       "src": "/(.*)",
@@ -18,8 +18,5 @@
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "git": {
-    "deploymentEnabled": true
   }
 }
