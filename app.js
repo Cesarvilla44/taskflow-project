@@ -85,6 +85,8 @@ let reminderIntervals = new Map();
  * @returns {Promise<void>}
  */
 async function showNotification(title, body) {
+    console.log(`🔔 Mostrando notificación: ${title} - ${body}`);
+    
     // Mostrar notificación del sistema
     if ('Notification' in window) {
         if (Notification.permission === 'granted') {
@@ -105,7 +107,8 @@ async function showNotification(title, body) {
         }
     }
 
-    // Mostrar recuadro personalizado
+    // SIEMPRE mostrar el popup personalizado (garantizar que se vea)
+    console.log(`🔔 Mostrando popup personalizado: ${body}`);
     showReminderPopup(body);
 }
 
