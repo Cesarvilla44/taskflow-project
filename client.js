@@ -1,6 +1,6 @@
 // Usamos el axios que acabamos de cargar en el HTML
 const client = axios.create({
-  baseURL: 'http://localhost:3000/api/v1',
+  baseURL: 'https://taskflow-project-orpin.vercel.app',
 });
 
 export default client;
