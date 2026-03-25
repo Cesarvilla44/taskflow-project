@@ -255,20 +255,14 @@ async function loadReminders() {
                 if (reminder.frequency === 'onrestart') {
                     console.log(`📡 CARGA INICIAL - PROCESANDO RECORDATORIO ONRESTART ${index}`);
                     
-                    // FORZAR: Usar la primera tarea disponible si no encuentra la tarea específica
-                    let finalTask = task;
-                    if (!finalTask && tasks.length > 0) {
-                        finalTask = tasks[0]; // Usar la primera tarea disponible
-                        console.log(`📡 CARGA INICIAL - Tarea específica no encontrada, usando primera tarea: ${finalTask.text}`);
-                    }
-                    
-                    if (finalTask && !finalTask.completed) {
-                        console.log(`📡 CARGA INICIAL - Tarea final encontrada: ${finalTask.text}`);
+                    // NO FORZAR: Solo procesar si la tarea específica existe
+                    if (task && !task.completed) {
+                        console.log(`📡 CARGA INICIAL - Tarea específica encontrada: ${task.text}`);
                         setTimeout(() => {
                             console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
                             // FORZAR: Usar alert nativo + showNotification
-                            alert(`🔔 Recordatorio: No olvides ${finalTask.text}`);
-                            showNotification('Recordatorio de tarea', `No olvides: ${finalTask.text}`);
+                            alert(`🔔 Recordatorio: No olvides ${task.text}`);
+                            showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
                         }, 2000); // 2 segundos
                     } else {
                         console.log(`📡 CARGA INICIAL - Recordatorio sin tarea válida, eliminando...`);
