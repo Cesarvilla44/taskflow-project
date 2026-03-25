@@ -265,6 +265,8 @@ async function loadReminders() {
                         console.log(`📡 CARGA INICIAL - Tarea encontrada: ${task.text}`);
                         setTimeout(() => {
                             console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
+                            // FORZAR: Usar alert nativo + showNotification
+                            alert(`🔔 Recordatorio: No olvides ${task.text}`);
                             showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
                         }, 2000); // 2 segundos
                     } else {
