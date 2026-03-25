@@ -119,6 +119,8 @@ async function showNotification(title, body) {
  * @returns {void}
  */
 function showReminderPopup(taskText) {
+    console.log(`🔔 Mostrando popup para: ${taskText}`);
+    
     // Eliminar cualquier popup existente
     const existingPopup = document.querySelector('.reminder-popup');
     if (existingPopup) {
@@ -149,6 +151,7 @@ function showReminderPopup(taskText) {
 
     // Añadir al body
     document.body.appendChild(popup);
+    console.log(`🔔 Popup agregado al DOM: ${popup.parentElement ? 'SÍ' : 'NO'}`);
 
     // Auto-cerrar después de 10 segundos
     setTimeout(() => {
