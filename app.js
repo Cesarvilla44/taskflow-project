@@ -871,6 +871,12 @@ function setupAutoSavePreferences(currentPreferences) {
  * INICIO DE LA APP: Sincronización con el Servidor
  */
 async function syncAppWithServer() {
+    // Limpiar localStorage para evitar conflictos
+    console.log("🧹 Limpiando localStorage para evitar conflictos...");
+    localStorage.removeItem('viewState');
+    localStorage.removeItem('tasks');
+    localStorage.removeItem('reminders');
+    
     console.log("🚀 ¡La aplicación ha arrancado correctamente!");
     console.log("🔍 Iniciando sincronización completa con servidor...");
     const statusEl = document.getElementById('network-status');
@@ -910,10 +916,11 @@ async function syncAppWithServer() {
         // Dibujamos todo lo que ha llegado
         renderTasks(); 
         console.log("🔍 A punto de iniciar recordatorios...");
-        // Esperar un poco a que las tareas se carguen completamente antes de iniciar recordatorios
+        // Esperar más tiempo a que las tareas se carguen completamente antes de iniciar recordatorios
         setTimeout(async () => {
+            console.log("🔄 Iniciando recordatorios después de esperar...");
             await startAllReminders(); // Cargar recordatorios desde servidor
-        }, 500);
+        }, 2000); // Aumentado de 500ms a 2000ms
         console.log("✅ Aplicación sincronizada con servidor");
         
         // Configurar botón de tema para servidor
