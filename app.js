@@ -131,7 +131,10 @@ function showReminderPopup(taskText) {
         existingPopup.remove();
     }
 
-    // Crear el popup
+    // Verificar si está en modo oscuro
+    const isDarkMode = document.documentElement.classList.contains('dark');
+    
+    // Crear el popup con estilos adaptados al modo
     const popup = document.createElement('div');
     popup.className = 'reminder-popup';
     popup.style.cssText = `
@@ -140,23 +143,23 @@ function showReminderPopup(taskText) {
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
         z-index: 9999 !important;
-        background: white !important;
+        background: ${isDarkMode ? '#1f2937' : 'white'} !important;
         padding: 24px !important;
         border-radius: 16px !important;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3) !important;
-        border: 1px solid #e5e7eb !important;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, ${isDarkMode ? '0.8' : '0.3'}) !important;
+        border: 1px solid ${isDarkMode ? '#374151' : '#e5e7eb'} !important;
         max-width: 400px !important;
         min-width: 300px !important;
     `;
     popup.innerHTML = `
         <div style="text-align: center; margin-bottom: 16px;">
             <div style="font-size: 32px; margin-bottom: 8px;">⏰</div>
-            <h3 style="font-size: 20px; font-weight: 700; margin: 0; color: #1f2937;">No olvides:</h3>
+            <h3 style="font-size: 20px; font-weight: 700; margin: 0; color: ${isDarkMode ? '#f3f4f6' : '#1f2937'};">No olvides:</h3>
         </div>
-        <div style="font-size: 16px; margin-bottom: 20px; line-height: 1.4; color: #374151; padding: 16px; background: #f8fafc; border-radius: 8px;">
+        <div style="font-size: 16px; margin-bottom: 20px; line-height: 1.4; color: ${isDarkMode ? '#d1d5db' : '#374151'}; padding: 16px; background: ${isDarkMode ? '#374151' : '#f8fafc'}; border-radius: 8px;">
             ${taskText}
         </div>
-        <button style="background: #3b82f6; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%;">
+        <button style="background: ${isDarkMode ? '#3b82f6' : '#3b82f6'}; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%;">
             Entendido
         </button>
     `;
