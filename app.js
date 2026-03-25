@@ -1359,6 +1359,7 @@ if (reminderModal) {
 document.addEventListener('submit', (event) => {
     if (event.target && event.target.id === 'task-form') {
         console.log("🛡️ Submit del formulario de tareas interceptado");
+        event.preventDefault(); // ¡AGREGAR ESTO!
         return; // Dejar pasar el submit del formulario de tareas
     }
     
