@@ -898,7 +898,8 @@ async function syncAppWithServer() {
         // 2. ESTADO DE ÉXITO
         tasks = tasksRes.data.data || tasksRes.data || []; // El array global ahora tiene los datos del server
         console.log("📋 Tareas cargadas desde servidor:", tasks.length);
-
+        console.log("📋 Contenido de tareas:", tasks); // AGREGADO PARA DEBUG
+        
         // Aplicar preferencias desde settings
         const settings = settingsRes.data || {};
         console.log("📋 Configuración cargada:", settings);
@@ -919,8 +920,13 @@ async function syncAppWithServer() {
         // Esperar más tiempo a que las tareas se carguen completamente antes de iniciar recordatorios
         setTimeout(async () => {
             console.log("🔄 Iniciando recordatorios después de esperar...");
-            await startAllReminders(); // Cargar recordatorios desde servidor
-        }, 2000); // Aumentado de 500ms a 2000ms
+            console.log("📋 Verificando tareas disponibles:", tasks.length);
+            if (tasks.length > 0) {
+                await startAllReminders(); // Cargar recordatorios desde servidor
+            } else {
+                console.log("⚠️ No hay tareas, omitiendo carga de recordatorios");
+            }
+        }, 3000); // Aumentado a 3000ms para asegurar que las tareas carguen
         console.log("✅ Aplicación sincronizada con servidor");
         
         // Configurar botón de tema para servidor
