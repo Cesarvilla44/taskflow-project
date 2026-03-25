@@ -226,21 +226,23 @@ async function loadReminders() {
                 console.log(`📡 CARGA INICIAL - Tarea encontrada:`, task ? task.text : 'NO');
                 console.log(`📡 CARGA INICIAL - Lista de todas las tareas:`, tasks.map(t => ({id: t.id, text: t.text})));
                 
-                if (task && !task.completed && reminder.frequency === 'onrestart') {
+                // SIEMPRE activar recordatorios onrestart (incluso si no hay tarea, para mostrar error)
+                if (reminder.frequency === 'onrestart') {
                     console.log(`📡 CARGA INICIAL - ACTIVANDO RECORDATORIO ONRESTART ${index}`);
-                    console.log(`📡 CARGA INICIAL - Tarea encontrada: ${task.text}`);
-                    setTimeout(() => {
-                        console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
-                        showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
-                    }, 3000); // Aumentado a 3 segundos para dar tiempo
+                    if (task && !task.completed) {
+                        console.log(`📡 CARGA INICIAL - Tarea encontrada: ${task.text}`);
+                        setTimeout(() => {
+                            console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
+                            showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
+                        }, 3000); // Aumentado a 3 segundos para dar tiempo
+                    } else {
+                        console.log(`📡 CARGA INICIAL - Recordatorio sin tarea válida, eliminando...`);
+                        // Eliminar recordatorio huérfano
+                        reminders = reminders.filter(r => r !== reminder);
+                        saveReminders();
+                    }
                 } else {
-                    console.log(`📡 CARGA INICIAL - Recordatorio ${index} no cumple condiciones:`, {
-                        hasTask: !!task,
-                        taskCompleted: task?.completed,
-                        frequency: reminder.frequency,
-                        reminderTaskId: reminder.taskId,
-                        allTaskIds: tasks.map(t => t.id)
-                    });
+                    console.log(`📡 CARGA INICIAL - Recordatorio ${index} no es onrestart, omitiendo`);
                 }
             });
         }
