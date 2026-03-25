@@ -907,6 +907,15 @@ async function syncAppWithServer() {
         console.log("📋 Tareas cargadas desde servidor:", tasks.length);
         console.log("📋 Contenido de tareas:", tasks); // AGREGADO PARA DEBUG
         
+        // Si el servidor no devuelve tareas, intentar cargar desde localStorage
+        if (tasks.length === 0) {
+            const backupTasks = localStorage.getItem('tasks_backup');
+            if (backupTasks) {
+                tasks = JSON.parse(backupTasks);
+                console.log("📋 Tareas cargadas desde localStorage backup:", tasks.length);
+            }
+        }
+        
         // Aplicar preferencias desde settings
         const settings = settingsRes.data || {};
         console.log("📋 Configuración cargada:", settings);
@@ -1098,12 +1107,24 @@ function hideNetworkStatus() {
 async function saveTasks() {
     try {
         showNetworkStatus('Procesando solicitud...', 'loading');
+        
+        // Intentar guardar en servidor
         await client.post('/tasks', tasks);
         console.log("📡 Tareas guardadas en servidor");
+        
+        // También guardar en localStorage como backup
+        localStorage.setItem('tasks_backup', JSON.stringify(tasks));
+        console.log("💾 Tareas guardadas en localStorage como backup");
+        
         showNetworkStatus('Tarea guardada correctamente', 'success');
     } catch (e) {
         console.error('❌ Error guardando tareas en servidor:', e);
-        showNetworkStatus('Error al guardar tarea', 'error');
+        
+        // Si falla el servidor, guardar en localStorage
+        localStorage.setItem('tasks_backup', JSON.stringify(tasks));
+        console.log("💾 Tareas guardadas en localStorage (fallback)");
+        
+        showNetworkStatus('Tarea guardada localmente', 'success');
         throw new Error('No se pudieron guardar las tareas en el servidor');
     }
 }
