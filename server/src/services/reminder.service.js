@@ -34,8 +34,15 @@ const saveReminders = async (reminders) => {
     await ensureDataDir();
     
     try {
+        // Validar que reminders sea un array
+        if (!Array.isArray(reminders)) {
+            throw new Error('reminders debe ser un array');
+        }
+        
         await fs.writeFile(REMINDERS_FILE, JSON.stringify(reminders, null, 2));
+        console.log("💾 Recordatorios guardados en archivo:", reminders.length);
     } catch (error) {
+        console.error("❌ Error guardando recordatorios:", error);
         throw error;
     }
 };
