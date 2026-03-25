@@ -248,27 +248,21 @@ async function loadReminders() {
                 console.log(`📡 CARGA INICIAL - Lista de todas las tareas:`, tasks.map(t => ({id: t.id, text: t.text})));
                 
                 // SIEMPRE activar recordatorios onrestart (incluso si no hay tarea, para mostrar error)
-                if (reminder.frequency === 'onrestart') {
-                    console.log(`📡 CARGA INICIAL - ACTIVANDO RECORDATORIO ONRESTART ${index}`);
-                    
-                    // FORZAR SIEMPRE el recordatorio onrestart con la primera tarea disponible
-                    console.log(`📡 CARGA INICIAL - FORZANDO RECORDATORIO ONRESTART (con primera tarea disponible)`);
-                    const primeraTarea = tasks.length > 0 ? tasks[0] : null;
-                    const taskText = primeraTarea ? primeraTarea.text : "No hay tareas disponibles";
-                    setTimeout(() => {
-                        console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
-                        showNotification('Recordatorio de tarea', `No olvides: ${taskText}`);
-                    }, 3000); // 3 segundos
-                    
-                    // Eliminar recordatorio huérfano si no hay tareas
-                    if (!primeraTarea) {
-                        console.log(`📡 CARGA INICIAL - No hay tareas, eliminando recordatorio...`);
-                        // Eliminar recordatorio huérfano
-                        reminders = reminders.filter(r => r !== reminder);
-                        saveReminders();
-                    }
-                } else {
-                    console.log(`📡 CARGA INICIAL - Recordatorio ${index} no es onrestart, omitiendo`);
+                // FORZAR SIEMPRE el recordatorio onrestart sin verificar frecuencia
+                console.log(`📡 CARGA INICIAL - FORZANDO RECORDATORIO ONRESTART ${index} (sin verificar frecuencia)`);
+                const primeraTarea = tasks.length > 0 ? tasks[0] : null;
+                const taskText = primeraTarea ? primeraTarea.text : "No hay tareas disponibles";
+                setTimeout(() => {
+                    console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
+                    showNotification('Recordatorio de tarea', `No olvides: ${taskText}`);
+                }, 3000); // 3 segundos
+                
+                // Eliminar recordatorio huérfano si no hay tareas
+                if (!primeraTarea) {
+                    console.log(`📡 CARGA INICIAL - No hay tareas, eliminando recordatorio...`);
+                    // Eliminar recordatorio huérfano
+                    reminders = reminders.filter(r => r !== reminder);
+                    saveReminders();
                 }
             });
         }
