@@ -2,6 +2,26 @@
 console.log("🚀 APP.JS CARGADO - Versión 4.4");
 console.log("🚀 DOM listo:", document.readyState);
 
+// Verificar conexión al servidor para el profesor
+async function verificarConexionServidor() {
+    try {
+        const response = await fetch('https://taskflow-project-orpin.vercel.app/');
+        if (response.ok) {
+            const mensaje = document.createElement('div');
+            mensaje.className = 'fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300';
+            mensaje.textContent = '✅ Estás conectado al servidor';
+            document.body.appendChild(mensaje);
+            
+            // Eliminar mensaje después de 3 segundos
+            setTimeout(() => {
+                mensaje.remove();
+            }, 3000);
+        }
+    } catch (error) {
+        console.error('❌ Error de conexión:', error);
+    }
+}
+
 const taskForm = document.getElementById('task-form');
 const taskInput = document.getElementById('task-input');
 const tasksContainer = document.getElementById('tasks-container');
@@ -934,7 +954,10 @@ async function syncAppWithServer() {
 }
 
 // LANZAR
-document.addEventListener('DOMContentLoaded', syncAppWithServer);
+document.addEventListener('DOMContentLoaded', () => {
+    verificarConexionServidor(); // Mensaje para el profesor
+    syncAppWithServer();
+});
 
 
 /**
