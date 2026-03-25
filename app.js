@@ -251,7 +251,7 @@ async function loadReminders() {
                         setTimeout(() => {
                             console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
                             showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
-                        }, 3000); // Aumentado a 3 segundos para dar tiempo
+                        }, 5000); // Aumentado a 5 segundos para dar más tiempo
                     } else {
                         console.log(`📡 CARGA INICIAL - Recordatorio sin tarea válida, eliminando...`);
                         // Eliminar recordatorio huérfano
