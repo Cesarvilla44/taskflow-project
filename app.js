@@ -430,13 +430,8 @@ async function startAllReminders() {
             console.log(`✅ Recordatorio ${index} válido - Tarea: ${task.text}, Frecuencia: ${reminder.frequency}`);
             
             if (reminder.frequency === 'onrestart') {
-                // Mostrar notificación inmediata
-                console.log(`🚀 Activando recordatorio 'onrestart' para: ${task.text}`);
-                console.log(`⏰ Programando notificación en 2 segundos...`);
-                setTimeout(() => {
-                    console.log(`🔔 ¡Ejecutando recordatorio 'onrestart' para: ${task.text}`);
-                    showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
-                }, 2000);
+                // NO mostrar notificación inmediata - solo al reiniciar
+                console.log(`� Recordatorio 'onrestart' configurado para: ${task.text} (solo al reiniciar)`);
             } else {
                 console.log(`⏰ Iniciando recordatorio programado: ${reminder.frequency} para: ${task.text}`);
                 startReminder(reminder.taskId, reminder.frequency);
@@ -1123,7 +1118,7 @@ async function deleteTask(index) {
 
     // Eliminar la tarea
     tasks.splice(numericIndex, 1);
-    saveTasks();
+    await saveTasks(); // ¡AGREGAR AWAIT!
     renderTasks();
 }
 
@@ -1462,11 +1457,7 @@ if (reminderAcceptBtn) {
                         console.log("🚀 TAREA ENCONTRADA:", task.text);
                         
                         if (frequency === 'onrestart') {
-                            console.log("🚀 PROGRAMANDO RECORDATORIO ONRESTART FORZADO");
-                            setTimeout(() => {
-                                console.log("� ¡EJECUTANDO RECORDATORIO FORZADO!");
-                                showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
-                            }, 2000);
+                            console.log("� Recordatorio 'onrestart' guardado (solo se activará al reiniciar)");
                         } else {
                             startReminder(taskId, frequency);
                         }
