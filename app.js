@@ -251,8 +251,8 @@ async function loadReminders() {
                 console.log(`📡 CARGA INICIAL - Tarea encontrada:`, task ? task.text : 'NO');
                 console.log(`📡 CARGA INICIAL - Lista de todas las tareas:`, tasks.map(t => ({id: t.id, text: t.text})));
                 
-                // FORZAR: Si el recordatorio es onrestart O si no hay tareas con ese ID, usar primera tarea
-                if (reminder.frequency === 'onrestart' || !task) {
+                // SOLO procesar recordatorios que son EXPLÍCITAMENTE onrestart
+                if (reminder.frequency === 'onrestart') {
                     console.log(`📡 CARGA INICIAL - PROCESANDO RECORDATORIO ONRESTART ${index}`);
                     
                     // FORZAR: Usar la primera tarea disponible si no encuentra la tarea específica
@@ -277,7 +277,7 @@ async function loadReminders() {
                         saveReminders();
                     }
                 } else {
-                    console.log(`📡 CARGA INICIAL - Recordatorio ${index} no es onrestart, omitiendo`);
+                    console.log(`📡 CARGA INICIAL - Recordatorio ${index} no es onrestart (${reminder.frequency}), omitiendo`);
                 }
             });
         }
