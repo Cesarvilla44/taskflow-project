@@ -311,7 +311,7 @@ async function saveReminders() {
         const response = await client.post('/reminders', { reminders });
         console.log("📡 Respuesta del servidor:", response);
         console.log("📡 Recordatorios guardados en servidor");
-        showNetworkStatus('Recordatorio guardado correctamente', 'success');
+        showNetworkStatus('¡Conseguido! 🎯', 'success');
     } catch (e) {
         console.error('❌ Error guardando recordatorios desde servidor:', e);
         console.error('❌ Tipo de error:', typeof e);
@@ -1165,7 +1165,7 @@ async function saveTasks() {
         localStorage.setItem('tasks_backup', JSON.stringify(tasks));
         console.log("💾 Tareas guardadas en localStorage como backup");
         
-        showNetworkStatus('Tarea guardada correctamente', 'success');
+        showNetworkStatus('¡Conseguido! 🎯', 'success');
     } catch (e) {
         console.error('❌ Error guardando tareas en servidor:', e);
         
@@ -1173,7 +1173,7 @@ async function saveTasks() {
         localStorage.setItem('tasks_backup', JSON.stringify(tasks));
         console.log("💾 Tareas guardadas en localStorage (fallback)");
         
-        showNetworkStatus('Tarea guardada localmente', 'success');
+        showNetworkStatus('¡Conseguido! 🎯', 'success');
         throw new Error('No se pudieron guardar las tareas en el servidor');
     }
 }
@@ -1364,7 +1364,7 @@ async function addNoteToTask(taskId, noteText) {
         task.notes.push(noteText);
         await saveTasks();
         
-        showNetworkStatus('Anotación guardada correctamente', 'success');
+        showNetworkStatus('¡Conseguido! 🎯', 'success');
     } catch (e) {
         console.error('❌ Error guardando anotación:', e);
         showNetworkStatus('Error al guardar anotación', 'error');
