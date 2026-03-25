@@ -1574,35 +1574,35 @@ if (reminderAcceptBtn) {
                             startReminder(taskId, frequency);
                         }
                         
-                        alert("✅ Recordatorio creado");
+                        alert(" Recordatorio creado");
                     } else {
-                        alert("❌ No se encontró la tarea, pero el recordatorio se intentó crear");
+                        alert(" No se encontró la tarea, pero el recordatorio se intentó crear");
                     }
                 } catch (reminderError) {
-                    console.error("❌ ERROR CREANDO RECORDATORIO:", reminderError);
-                    alert("❌ Error creando recordatorio local");
+                    console.error(" ERROR CREANDO RECORDATORIO:", reminderError);
+                    alert(" Error creando recordatorio local");
                 }
                 
                 // CERRAR MODAL CON CAPTURA
                 try {
-                    console.log("🔔 Cerrando modal...");
+                    console.log(" Cerrando modal...");
                     if (reminderModal) {
                         reminderModal.classList.add('hidden');
                     }
                 } catch (modalError) {
-                    console.error("❌ ERROR CERRANDO MODAL:", modalError);
+                    console.error(" ERROR CERRANDO MODAL:", modalError);
                 }
                 
                 return false;
             } else {
-                console.log("⚠️ El recordatorio ya existe");
-                alert("⚠️ Este recordatorio ya existe.");
+                console.log(" El recordatorio ya existe");
+                alert(" Este recordatorio ya existe.");
                 return false;
             }
         } catch (generalError) {
-            console.error("❌ ERROR GENERAL TOTAL:", generalError);
-            console.error("❌ STACK COMPLETO:", generalError.stack);
-            alert("❌ Error general, pero intentando forzar recordatorio...");
+            console.error(" ERROR GENERAL TOTAL:", generalError);
+            console.error(" STACK COMPLETO:", generalError.stack);
+            alert(" Error general, pero intentando forzar recordatorio...");
             
             // ÚLTIMO RECURSO: FORZAR RECORDATORIO MANUAL
             try {
