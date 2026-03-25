@@ -254,8 +254,13 @@ async function loadReminders() {
                 if (reminder.frequency === 'onrestart') {
                     console.log(`📡 CARGA INICIAL - ACTIVANDO RECORDATORIO ONRESTART ${index}`);
                     
-                    // Verificar que la tarea existe y no está completada
-                    const task = findTaskById(reminder.taskId);
+                    // FORZAR: Usar la primera tarea disponible si no encuentra la tarea específica
+                    let task = findTaskById(reminder.taskId);
+                    if (!task && tasks.length > 0) {
+                        task = tasks[0]; // Usar la primera tarea disponible
+                        console.log(`📡 CARGA INICIAL - Tarea específica no encontrada, usando primera tarea: ${task.text}`);
+                    }
+                    
                     if (task && !task.completed) {
                         console.log(`📡 CARGA INICIAL - Tarea encontrada: ${task.text}`);
                         setTimeout(() => {
