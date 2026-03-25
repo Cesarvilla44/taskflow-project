@@ -54,8 +54,5 @@ app.use((err, req, res, next) => {
     });
 });
 
-// --- INICIO DEL SERVIDOR ---
-app.listen(PORT, () => {
-    console.log(`\n✅ SERVIDOR ACTIVO`);
-    console.log(`🔗 URL BASE: http://localhost:${PORT}/api/v1/tasks`);
-});
+// --- EXPORTAR PARA VERCEL ---
+module.exports = app;
