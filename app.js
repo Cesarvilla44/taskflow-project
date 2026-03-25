@@ -107,6 +107,10 @@ async function showNotification(title, body) {
         }
     }
 
+    // FORZAR ALERT SIEMPRE para garantizar que se vea
+    console.log(`🔔 Mostrando ALERT para: ${body}`);
+    alert(`⏰ Recordatorio de tarea\n\nNo olvides: ${body}`);
+    
     // SIEMPRE mostrar el popup personalizado (garantizar que se vea)
     console.log(`🔔 Mostrando popup personalizado: ${body}`);
     showReminderPopup(body);
