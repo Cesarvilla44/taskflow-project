@@ -131,10 +131,18 @@ function showReminderPopup(taskText) {
             <h3 class="reminder-popup-title">No olvides:</h3>
         </div>
         <div class="reminder-popup-task">${taskText}</div>
-        <button class="reminder-popup-close" onclick="this.parentElement.remove()">
+        <button class="reminder-popup-close">
             Entendido
         </button>
     `;
+
+    // Añadir event listener al botón de cerrar
+    const closeBtn = popup.querySelector('.reminder-popup-close');
+    closeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        popup.remove();
+    });
 
     // Añadir al body
     document.body.appendChild(popup);
