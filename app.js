@@ -1482,10 +1482,32 @@ function closeReminderModal() {
     reminderModal.classList.add('hidden');
 }
 
+// FORZAR: Re-inicializar botones si no reaccionan
+console.log("🔔 Verificando botones de recordatorios...");
+console.log("🔔 reminderOpenBtn:", reminderOpenBtn);
+console.log("🔔 reminderAcceptBtn:", reminderAcceptBtn);
+console.log("🔔 reminderCancelBtn:", reminderCancelBtn);
+
 if (reminderOpenBtn) {
-    reminderOpenBtn.addEventListener('click', () => {
+    console.log("🔔 Botón de recordatorio encontrado, añadiendo event listener...");
+    reminderOpenBtn.addEventListener('click', (e) => {
+        console.log("🔔 Botón de recordatorio pulsado");
+        e.preventDefault();
         openReminderModal();
     });
+} else {
+    console.log("❌ Botón de recordatorio NO encontrado");
+}
+
+if (reminderAcceptBtn) {
+    console.log("🔔 Botón de aceptar recordatorio encontrado");
+    reminderAcceptBtn.addEventListener('click', (e) => {
+        console.log("🔔 Botón de aceptar recordatorio pulsado");
+        e.preventDefault();
+        // Lógica de recordatorio aquí
+    });
+} else {
+    console.log("❌ Botón de aceptar recordatorio NO encontrado");
 }
 
 if (reminderCancelBtn) {
