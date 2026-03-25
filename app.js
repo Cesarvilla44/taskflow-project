@@ -446,7 +446,8 @@ async function startAllReminders() {
     
     console.log("🧹 A punto de limpiar recordatorios huérfanos...");
     // Limpiar recordatorios huérfanos primero
-    await cleanupOrphanedReminders();
+    // Desactivar completamente para evitar que elimine recordatorios válidos
+    // await cleanupOrphanedReminders();
     
     if (reminders.length === 0) {
         console.log("📭 Todos los recordatorios fueron huérfanos y fueron eliminados");
