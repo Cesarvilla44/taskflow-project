@@ -220,10 +220,17 @@ async function loadReminders() {
                 
                 if (task && !task.completed && reminder.frequency === 'onrestart') {
                     console.log(`📡 CARGA INICIAL - ACTIVANDO RECORDATORIO ONRESTART ${index}`);
+                    console.log(`📡 CARGA INICIAL - Tarea encontrada: ${task.text}`);
                     setTimeout(() => {
                         console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
                         showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
-                    }, 2000);
+                    }, 3000); // Aumentado a 3 segundos para dar tiempo
+                } else {
+                    console.log(`📡 CARGA INICIAL - Recordatorio ${index} no cumple condiciones:`, {
+                        hasTask: !!task,
+                        taskCompleted: task?.completed,
+                        frequency: reminder.frequency
+                    });
                 }
             });
         }
