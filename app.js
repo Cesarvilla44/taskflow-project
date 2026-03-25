@@ -244,30 +244,31 @@ async function loadReminders() {
             console.log("📡 CARGA INICIAL - HAY RECORDATORIOS, FORZANDO ACTIVACIÓN...");
             reminders.forEach((reminder, index) => {
                 console.log(`📡 CARGA INICIAL - Procesando recordatorio ${index}:`, reminder);
+                console.log(`📡 CARGA INICIAL - Frecuencia del recordatorio: ${reminder.frequency}`);
                 console.log(`📡 CARGA INICIAL - Buscando tarea con ID: ${reminder.taskId}`);
                 
                 const task = findTaskById(reminder.taskId);
                 console.log(`📡 CARGA INICIAL - Tarea encontrada:`, task ? task.text : 'NO');
                 console.log(`📡 CARGA INICIAL - Lista de todas las tareas:`, tasks.map(t => ({id: t.id, text: t.text})));
                 
-                // ACTIVAR recordatorios onrestart SOLO si la frecuencia es 'onrestart'
-                if (reminder.frequency === 'onrestart') {
-                    console.log(`📡 CARGA INICIAL - ACTIVANDO RECORDATORIO ONRESTART ${index}`);
+                // FORZAR: Si el recordatorio es onrestart O si no hay tareas con ese ID, usar primera tarea
+                if (reminder.frequency === 'onrestart' || !task) {
+                    console.log(`📡 CARGA INICIAL - PROCESANDO RECORDATORIO ONRESTART ${index}`);
                     
                     // FORZAR: Usar la primera tarea disponible si no encuentra la tarea específica
-                    let task = findTaskById(reminder.taskId);
-                    if (!task && tasks.length > 0) {
-                        task = tasks[0]; // Usar la primera tarea disponible
-                        console.log(`📡 CARGA INICIAL - Tarea específica no encontrada, usando primera tarea: ${task.text}`);
+                    let finalTask = task;
+                    if (!finalTask && tasks.length > 0) {
+                        finalTask = tasks[0]; // Usar la primera tarea disponible
+                        console.log(`📡 CARGA INICIAL - Tarea específica no encontrada, usando primera tarea: ${finalTask.text}`);
                     }
                     
-                    if (task && !task.completed) {
-                        console.log(`📡 CARGA INICIAL - Tarea encontrada: ${task.text}`);
+                    if (finalTask && !finalTask.completed) {
+                        console.log(`📡 CARGA INICIAL - Tarea final encontrada: ${finalTask.text}`);
                         setTimeout(() => {
                             console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
                             // FORZAR: Usar alert nativo + showNotification
-                            alert(`🔔 Recordatorio: No olvides ${task.text}`);
-                            showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
+                            alert(`🔔 Recordatorio: No olvides ${finalTask.text}`);
+                            showNotification('Recordatorio de tarea', `No olvides: ${finalTask.text}`);
                         }, 2000); // 2 segundos
                     } else {
                         console.log(`📡 CARGA INICIAL - Recordatorio sin tarea válida, eliminando...`);
