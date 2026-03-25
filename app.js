@@ -1123,21 +1123,31 @@ function renderTasks() {
  * @returns {void}
  */
 function showNetworkStatus(message, type = 'loading') {
+    console.log(`🔔 Mostrando estado: ${message} (${type})`);
     const statusEl = document.getElementById('network-status');
-    if (!statusEl) return;
+    if (!statusEl) {
+        console.log('❌ No se encontró el elemento #network-status');
+        return;
+    }
     
+    console.log(`✅ Elemento #network-status encontrado`);
     statusEl.style.display = 'flex';
     statusEl.className = `network-status ${type}`;
     
     const textEl = statusEl.querySelector('.network-text');
     if (textEl) {
         textEl.textContent = message;
+        console.log(`✅ Texto actualizado: ${message}`);
+    } else {
+        console.log('❌ No se encontró el elemento .network-text');
     }
     
     // Auto-ocultar después de 3 segundos si no es loading
     if (type !== 'loading') {
+        console.log(`⏰ Auto-ocultando en 3 segundos...`);
         setTimeout(() => {
             statusEl.style.display = 'none';
+            console.log(`🔔 Estado oculto`);
         }, 3000);
     }
 }
