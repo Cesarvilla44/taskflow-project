@@ -250,9 +250,27 @@ async function loadReminders() {
                 console.log(`📡 CARGA INICIAL - Tarea encontrada:`, task ? task.text : 'NO');
                 console.log(`📡 CARGA INICIAL - Lista de todas las tareas:`, tasks.map(t => ({id: t.id, text: t.text})));
                 
-                // NO ACTIVAR recordatorios onrestart - PROBLEMAS CON SYNC
-                console.log(`📡 CARGA INICIAL - Recordatorio ${index} omitido (onrestart desactivado)`);
-                // NO HACER NADA - OMITIR TODOS LOS RECORDATORIOS ONRESTART
+                // ACTIVAR recordatorios onrestart SOLO si la frecuencia es 'onrestart'
+                if (reminder.frequency === 'onrestart') {
+                    console.log(`📡 CARGA INICIAL - ACTIVANDO RECORDATORIO ONRESTART ${index}`);
+                    
+                    // Verificar que la tarea existe y no está completada
+                    const task = findTaskById(reminder.taskId);
+                    if (task && !task.completed) {
+                        console.log(`📡 CARGA INICIAL - Tarea encontrada: ${task.text}`);
+                        setTimeout(() => {
+                            console.log(`📡 CARGA INICIAL - EJECUTANDO RECORDATORIO ${index}`);
+                            showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
+                        }, 2000); // 2 segundos
+                    } else {
+                        console.log(`📡 CARGA INICIAL - Recordatorio sin tarea válida, eliminando...`);
+                        // Eliminar recordatorio huérfano
+                        reminders = reminders.filter(r => r !== reminder);
+                        saveReminders();
+                    }
+                } else {
+                    console.log(`📡 CARGA INICIAL - Recordatorio ${index} no es onrestart, omitiendo`);
+                }
             });
         }
         
@@ -297,7 +315,7 @@ async function saveReminders() {
         const response = await client.post('/reminders', { reminders });
         console.log("📡 Respuesta del servidor:", response);
         console.log("📡 Recordatorios guardados en servidor");
-        showNetworkStatus('¡Conseguido! 🎯', 'success');
+        showNetworkStatus('Conseguido', 'success');
     } catch (e) {
         console.error('❌ Error guardando recordatorios desde servidor:', e);
         console.error('❌ Tipo de error:', typeof e);
@@ -306,7 +324,7 @@ async function saveReminders() {
         
         // NO MOSTRAR ERROR - SIMPLEMENTE GUARDAR LOCALMENTE
         console.log("📡 Servidor falló, pero recordatorios guardados localmente");
-        showNetworkStatus('¡Conseguido! 🎯', 'success');
+        showNetworkStatus('Conseguido', 'success');
         
         // NO lanzar el error para evitar que se propague
         // throw new Error('No se pudieron guardar los recordatorios en el servidor');
@@ -917,7 +935,7 @@ async function syncAppWithServer() {
     if (statusEl) {
         statusEl.style.display = 'block';
         statusEl.className = 'loading';
-        statusEl.textContent = "⏳ Conectando con TaskFlow Server...";
+        statusEl.textContent = "Conectando...";
     }
 
     try {
@@ -1371,7 +1389,7 @@ async function addNoteToTask(taskId, noteText) {
         task.notes.push(noteText);
         await saveTasks();
         
-        showNetworkStatus('¡Conseguido! 🎯', 'success');
+        showNetworkStatus('Conseguido', 'success');
     } catch (e) {
         console.error('❌ Error guardando anotación:', e);
         showNetworkStatus('Error al guardar anotación', 'error');
