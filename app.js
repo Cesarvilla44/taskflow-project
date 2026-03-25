@@ -214,9 +214,11 @@ async function loadReminders() {
             console.log("📡 CARGA INICIAL - HAY RECORDATORIOS, FORZANDO ACTIVACIÓN...");
             reminders.forEach((reminder, index) => {
                 console.log(`📡 CARGA INICIAL - Procesando recordatorio ${index}:`, reminder);
+                console.log(`📡 CARGA INICIAL - Buscando tarea con ID: ${reminder.taskId}`);
                 
                 const task = findTaskById(reminder.taskId);
                 console.log(`📡 CARGA INICIAL - Tarea encontrada:`, task ? task.text : 'NO');
+                console.log(`📡 CARGA INICIAL - Lista de todas las tareas:`, tasks.map(t => ({id: t.id, text: t.text})));
                 
                 if (task && !task.completed && reminder.frequency === 'onrestart') {
                     console.log(`📡 CARGA INICIAL - ACTIVANDO RECORDATORIO ONRESTART ${index}`);
@@ -229,7 +231,9 @@ async function loadReminders() {
                     console.log(`📡 CARGA INICIAL - Recordatorio ${index} no cumple condiciones:`, {
                         hasTask: !!task,
                         taskCompleted: task?.completed,
-                        frequency: reminder.frequency
+                        frequency: reminder.frequency,
+                        reminderTaskId: reminder.taskId,
+                        allTaskIds: tasks.map(t => t.id)
                     });
                 }
             });
