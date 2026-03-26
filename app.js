@@ -1501,10 +1501,80 @@ if (reminderOpenBtn) {
 
 if (reminderAcceptBtn) {
     console.log("🔔 Botón de aceptar recordatorio encontrado");
-    reminderAcceptBtn.addEventListener('click', (e) => {
+    reminderAcceptBtn.addEventListener('click', async (e) => {
         console.log("🔔 Botón de aceptar recordatorio pulsado");
         e.preventDefault();
-        // Lógica de recordatorio aquí
+        e.stopPropagation();
+        
+        try {
+            if (!reminderTaskSelect || !reminderFrequency) {
+                console.log("❌ Faltan elementos del modal");
+                alert("❌ Faltan elementos del modal");
+                return false;
+            }
+            
+            const taskId = reminderTaskSelect.value;
+            const frequency = reminderFrequency.value;
+
+            console.log("📋 Datos del recordatorio:", { taskId, frequency });
+
+            if (!taskId || !frequency) {
+                console.log("❌ Datos incompletos");
+                alert("❌ Datos incompletos");
+                return false;
+            }
+
+            // Verificar si ya existe un recordatorio para esta tarea y frecuencia
+            const existingIndex = reminders.findIndex(r => r.taskId === taskId && r.frequency === frequency);
+            if (existingIndex === -1) {
+                console.log("➕ Añadiendo nuevo recordatorio al array");
+                reminders.push({ taskId, frequency });
+                console.log("💾 Array de recordatorios actualizado:", reminders);
+                
+                // Guardar recordatorio
+                try {
+                    console.log("📡 INICIANDO GUARDADO FORZADO");
+                    await saveReminders();
+                    console.log("💾 Recordatorios guardados permanentemente");
+                } catch (saveError) {
+                    console.error("❌ ERROR GUARDANDO:", saveError);
+                    console.log("🚀 CONTINUANDO A PESAR DE ERRORES...");
+                }
+                
+                const task = findTaskById(taskId);
+                if (task) {
+                    console.log("🚀 TAREA ENCONTRADA:", task.text);
+                    
+                    if (frequency === 'onrestart') {
+                        console.log("🔄 Recordatorio 'onrestart' guardado (solo se activará al reiniciar)");
+                        // FORZAR: Activar inmediatamente para probar
+                        setTimeout(() => {
+                            console.log("🔄 EJECUTANDO RECORDATORIO ONRESTART INMEDIATO");
+                            alert(`🔔 Recordatorio: No olvides ${task.text}`);
+                            showNotification('Recordatorio de tarea', `No olvides: ${task.text}`);
+                        }, 1000);
+                    } else {
+                        startReminder(taskId, frequency);
+                    }
+                    
+                    alert("✅ Recordatorio creado");
+                } else {
+                    alert("⚠️ No se encontró la tarea, pero el recordatorio se intentó crear");
+                }
+                
+                // Cerrar modal
+                closeReminderModal();
+                return false;
+            } else {
+                console.log("⚠️ El recordatorio ya existe");
+                alert("⚠️ Este recordatorio ya existe.");
+                return false;
+            }
+        } catch (generalError) {
+            console.error("❌ ERROR GENERAL TOTAL:", generalError);
+            alert("❌ Error general, pero intentando forzar recordatorio...");
+            return false;
+        }
     });
 } else {
     console.log("❌ Botón de aceptar recordatorio NO encontrado");
