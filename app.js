@@ -941,11 +941,11 @@ function setupAutoSavePreferences(currentPreferences) {
  * INICIO DE LA APP: Sincronización con el Servidor
  */
 async function syncAppWithServer() {
-    // Limpiar localStorage para evitar conflictos
+    // Limpiar localStorage para evitar conflictos (pero NO reminders)
     console.log("🧹 Limpiando localStorage para evitar conflictos...");
     localStorage.removeItem('viewState');
     localStorage.removeItem('tasks');
-    localStorage.removeItem('reminders');
+    // NO eliminar reminders para que los recordatorios onrestart funcionen
     
     console.log("🚀 ¡La aplicación ha arrancado correctamente!");
     console.log("🔍 Iniciando sincronización completa con servidor...");
