@@ -1541,6 +1541,10 @@ if (reminderAcceptBtn) {
                     console.log("🚀 CONTINUANDO A PESAR DE ERRORES...");
                 }
                 
+                // FORZAR: Guardar siempre en localStorage como backup
+                localStorage.setItem('reminders', JSON.stringify(reminders));
+                console.log("💾 Recordatorios guardados en localStorage como backup");
+                
                 const task = findTaskById(taskId);
                 if (task) {
                     console.log("🚀 TAREA ENCONTRADA:", task.text);
