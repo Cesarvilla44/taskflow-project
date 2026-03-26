@@ -1,5 +1,41 @@
 // DIAGNÓSTICO - Verificar que el script se carga
-console.log("🚀 APP.JS CARGADO - Versión 4.4");
+// Detectar si es versión móvil
+const isMobile = window.location.pathname.includes('index-mobile.html') || window.location.search.includes('mobile');
+
+// Mapeo de IDs para móvil
+const mobileIdMappings = {
+    'task-form': isMobile ? 'mobile-task-form' : 'task-form',
+    'task-input': isMobile ? 'mobile-task-input' : 'task-input',
+    'search-input': isMobile ? 'mobile-search-input' : 'search-input',
+    'search-btn': isMobile ? 'mobile-search-btn' : 'search-btn',
+    'sort-select': isMobile ? 'mobile-sort-select' : 'sort-select',
+    'tasks-container': isMobile ? 'mobile-tasks-container' : 'tasks-container',
+    'empty-state': isMobile ? 'mobile-empty-state' : 'empty-state',
+    'theme-toggle': isMobile ? 'mobile-theme-toggle' : 'theme-toggle',
+    'theme-icon': isMobile ? 'mobile-theme-icon' : 'theme-icon',
+    'settings-btn': isMobile ? 'mobile-settings-btn' : 'settings-btn',
+    'notes-modal': isMobile ? 'mobile-notes-modal' : 'notes-modal',
+    'notes-close': isMobile ? 'mobile-notes-close' : 'notes-close',
+    'notes-task-select': isMobile ? 'mobile-notes-task-select' : 'notes-task-select',
+    'notes-textarea': isMobile ? 'mobile-notes-textarea' : 'notes-textarea',
+    'notes-char-count': isMobile ? 'mobile-notes-char-count' : 'notes-char-count',
+    'notes-cancel': isMobile ? 'mobile-notes-cancel' : 'notes-cancel',
+    'notes-accept': isMobile ? 'mobile-notes-accept' : 'notes-accept',
+    'reminder-modal': isMobile ? 'mobile-reminder-modal' : 'reminder-modal',
+    'reminder-close': isMobile ? 'mobile-reminder-close' : 'reminder-close',
+    'reminder-task-select': isMobile ? 'mobile-reminder-task-select' : 'reminder-task-select',
+    'reminder-frequency': isMobile ? 'mobile-reminder-frequency' : 'reminder-frequency',
+    'reminder-warning': isMobile ? 'mobile-reminder-warning' : 'reminder-warning',
+    'reminder-cancel': isMobile ? 'mobile-reminder-cancel' : 'reminder-cancel',
+    'reminder-accept': isMobile ? 'mobile-reminder-accept' : 'reminder-accept'
+};
+
+// Función para obtener el ID correcto según el contexto
+function getId(baseId) {
+    return mobileIdMappings[baseId] || baseId;
+}
+
+console.log('🚀 APP.JS CARGADO - Versión 4.5 - ' + (isMobile ? 'Móvil' : 'Escritorio'));
 console.log("🚀 DOM listo:", document.readyState);
 
 // Verificar conexión al servidor para el profesor
@@ -22,42 +58,42 @@ async function verificarConexionServidor() {
     }
 }
 
-const taskForm = document.getElementById('task-form');
-const taskInput = document.getElementById('task-input');
-const tasksContainer = document.getElementById('tasks-container');
-const searchInput = document.getElementById('search-input');
+const taskForm = document.getElementById(getId('task-form'));
+const taskInput = document.getElementById(getId('task-input'));
+const tasksContainer = document.getElementById(getId('tasks-container'));
+const searchInput = document.getElementById(getId('search-input'));
 const categoryFilter = document.getElementById('category-filter');
 const categoryTaskSelectorLabel = document.getElementById('category-task-selector-label');
 const categoryTaskSelector = document.getElementById('category-task-selector');
 const priorityFilter = document.getElementById('priority-filter');
 const taskSelectorLabel = document.getElementById('task-selector-label');
 const taskPrioritySelector = document.getElementById('task-priority-selector');
-const sortSelect = document.getElementById('sort-select');
+const sortSelect = document.getElementById(getId('sort-select'));
 const completeAllBtn = document.getElementById('complete-all-btn');
 const deleteAllBtn = document.getElementById('delete-all-btn');
 const notesOpenBtn = document.getElementById('notes-open-btn');
-const notesModal = document.getElementById('notes-modal');
-const notesTaskSelect = document.getElementById('notes-task-select');
-const notesTextarea = document.getElementById('notes-textarea');
-const notesCharCount = document.getElementById('notes-char-count');
-const notesAcceptBtn = document.getElementById('notes-accept-btn');
-const notesCancelBtn = document.getElementById('notes-cancel-btn');
+const notesModal = document.getElementById(getId('notes-modal'));
+const notesTaskSelect = document.getElementById(getId('notes-task-select'));
+const notesTextarea = document.getElementById(getId('notes-textarea'));
+const notesCharCount = document.getElementById(getId('notes-char-count'));
+const notesAcceptBtn = document.getElementById(getId('notes-accept-btn'));
+const notesCancelBtn = document.getElementById(getId('notes-cancel-btn'));
 const notesCloseIcon = document.getElementById('notes-close-icon');
-const notesWarning = document.getElementById('notes-warning');
+const notesWarning = document.getElementById(getId('notes-warning'));
 const reminderOpenBtn = document.getElementById('reminder-open-btn');
-const reminderModal = document.getElementById('reminder-modal');
-const reminderTaskSelect = document.getElementById('reminder-task-select');
-const reminderFrequency = document.getElementById('reminder-frequency');
-const reminderAcceptBtn = document.getElementById('reminder-accept-btn');
-const reminderCancelBtn = document.getElementById('reminder-cancel-btn');
+const reminderModal = document.getElementById(getId('reminder-modal'));
+const reminderTaskSelect = document.getElementById(getId('reminder-task-select'));
+const reminderFrequency = document.getElementById(getId('reminder-frequency'));
+const reminderAcceptBtn = document.getElementById(getId('reminder-accept-btn'));
+const reminderCancelBtn = document.getElementById(getId('reminder-cancel-btn'));
 const reminderCloseIcon = document.getElementById('reminder-close-icon');
-const reminderWarning = document.getElementById('reminder-warning');
+const reminderWarning = document.getElementById(getId('reminder-warning'));
 
 
 // Tema (claro/oscuro)
 const html = document.documentElement;
-const themeBtn = document.getElementById('theme-toggle');
-const themeIcon = document.getElementById('theme-icon');
+const themeBtn = document.getElementById(getId('theme-toggle'));
+const themeIcon = document.getElementById(getId('theme-icon'));
 const themeLabel = document.getElementById('theme-label');
 
 let tasks = [];

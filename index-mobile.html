@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TaskFlow - Móvil</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        /* Diseño profesional para móvil */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            overscroll-behavior: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Prevenir zoom en inputs */
+        input, textarea, select {
+            font-size: 16px !important;
+        }
+
+        /* Safe area para iPhone */
+        .safe-area-top {
+            padding-top: env(safe-area-inset-top);
+        }
+
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Footer móvil */
+        .mobile-footer {
+            border-top: none;
+            background: transparent;
+        }
+
+        .dark .mobile-footer {
+            border-top: none;
+            background: transparent;
+        }
+
+        .dark .mobile-footer p {
+            color: #d1d5db !important;
+        }
+
+        /* Tarjetas de tareas optimizadas para móvil */
+        .mobile-task-card {
+            border-radius: 1rem;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background-color: #ffffff;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+        }
+
+        .dark .mobile-task-card {
+            background-color: rgba(15, 23, 42, 0.9);
+            border-color: rgba(51, 65, 85, 0.8);
+            color: #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .mobile-task-card:active {
+            transform: scale(0.98);
+        }
+
+        /* Botones táctiles */
+        .mobile-btn {
+            min-height: 44px;
+            min-width: 44px;
+            touch-action: manipulation;
+            transition: all 0.15s ease;
+        }
+
+        .mobile-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Modales optimizados para móvil */
+        .mobile-modal {
+            padding: 1.5rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* Inputs optimizados para móvil */
+        .mobile-input {
+            font-size: 16px;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .dark .mobile-input {
+            background-color: rgba(15, 23, 42, 0.9);
+            border-color: rgba(51, 65, 85, 0.8);
+            color: #e5e7eb;
+        }
+
+        .mobile-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Selects optimizados para móvil */
+        .mobile-select {
+            font-size: 16px;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .dark .mobile-select {
+            background-color: rgba(15, 23, 42, 0.9);
+            border-color: rgba(51, 65, 85, 0.8);
+            color: #e5e7eb;
+        }
+
+        /* Textareas optimizadas para móvil */
+        .mobile-textarea {
+            font-size: 16px;
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            background-color: #ffffff;
+            resize: vertical;
+            min-height: 100px;
+            transition: all 0.2s ease;
+        }
+
+        .dark .mobile-textarea {
+            background-color: rgba(15, 23, 42, 0.9);
+            border-color: rgba(51, 65, 85, 0.8);
+            color: #e5e7eb;
+        }
+
+        /* Botones flotantes optimizados para móvil */
+        .mobile-fab {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 50;
+            transition: all 0.2s ease;
+        }
+
+        .mobile-fab:active {
+            transform: scale(0.9);
+        }
+
+        /* Contenedor principal */
+        .mobile-container {
+            max-width: 100%;
+            padding: 0 1rem;
+            margin: 0 auto;
+        }
+
+        /* Ocultar scrollbar en móviles */
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen safe-area-top safe-area-bottom">
+    <!-- Contenedor principal móvil -->
+    <div class="mobile-container">
+        <!-- Header móvil -->
+        <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 safe-area-top">
+            <div class="px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <h1 class="text-2xl font-bold text-gray-800 dark:text-white">TaskFlow</h1>
+                    <div class="flex items-center gap-3">
+                        <!-- Botón de tema -->
+                        <button id="mobile-theme-toggle" class="mobile-btn p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                            <span id="mobile-theme-icon">🌙</span>
+                        </button>
+                        <!-- Botón de configuración -->
+                        <button id="mobile-settings-btn" class="mobile-btn p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                            <span>⚙️</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Contenido principal -->
+        <main class="pb-20">
+            <!-- Formulario de tareas -->
+            <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 mb-6">
+                <form id="mobile-task-form" class="space-y-4">
+                    <div class="flex gap-3">
+                        <input 
+                            type="text" 
+                            id="mobile-task-input" 
+                            placeholder="Añadir nueva tarea..." 
+                            class="mobile-input flex-1"
+                            maxlength="200"
+                        >
+                        <button 
+                            type="submit" 
+                            class="mobile-btn px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold"
+                        >
+                            Añadir
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Filtros y búsqueda -->
+            <section class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-4 mb-6">
+                <div class="space-y-3">
+                    <div class="flex gap-2">
+                        <input 
+                            type="text" 
+                            id="mobile-search-input" 
+                            placeholder="Buscar tareas..." 
+                            class="mobile-input flex-1"
+                        >
+                        <button 
+                            id="mobile-search-btn" 
+                            class="mobile-btn p-3 bg-gray-100 dark:bg-gray-700 rounded-xl"
+                        >
+                            <span>🔍</span>
+                        </button>
+                    </div>
+                    <div class="flex gap-2 overflow-x-auto hide-scrollbar">
+                        <button class="mobile-filter-btn mobile-btn px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium whitespace-nowrap" data-filter="all">
+                            Todas
+                        </button>
+                        <button class="mobile-filter-btn mobile-btn px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium whitespace-nowrap" data-filter="active">
+                            Activas
+                        </button>
+                        <button class="mobile-filter-btn mobile-btn px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium whitespace-nowrap" data-filter="completed">
+                            Completadas
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Ordenar:</label>
+                        <select id="mobile-sort-select" class="mobile-select flex-1 text-sm">
+                            <option value="newest">Más nuevas</option>
+                            <option value="oldest">Más antiguas</option>
+                            <option value="alphabetical">Alfabético</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lista de tareas -->
+            <section class="space-y-3">
+                <div id="mobile-tasks-container" class="space-y-3">
+                    <!-- Las tareas se renderizarán aquí -->
+                </div>
+            </section>
+
+            <!-- Estado vacío -->
+            <div id="mobile-empty-state" class="hidden text-center py-12">
+                <div class="text-6xl mb-4">📝</div>
+                <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No hay tareas</h3>
+                <p class="text-gray-500 dark:text-gray-400">Añade tu primera tarea para empezar</p>
+            </div>
+        </main>
+
+        <!-- Botones flotantes -->
+        <div class="mobile-fab bg-blue-500 hover:bg-blue-600 text-white" id="mobile-task-fab">
+            <span class="text-2xl">➕</span>
+        </div>
+
+        <div class="mobile-fab bg-purple-500 hover:bg-purple-600 text-white" id="mobile-reminder-fab" style="bottom: 5rem;">
+            <span class="text-2xl">⏰</span>
+        </div>
+
+        <!-- Footer móvil -->
+        <footer class="mobile-footer text-center py-4 text-sm text-gray-500 dark:text-gray-400 safe-area-bottom">
+            <p>TaskFlow &copy; 2024 - Versión Móvil</p>
+        </footer>
+    </div>
+
+    <!-- Modal de notas -->
+    <div id="mobile-notes-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="mobile-modal bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Añadir Nota</h3>
+                <button id="mobile-notes-close" class="mobile-btn p-2 rounded-lg bg-gray-100 dark:bg-gray-700">
+                    <span>✕</span>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tarea</label>
+                    <select id="mobile-notes-task-select" class="mobile-select w-full">
+                        <option value="">Selecciona una tarea...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nota</label>
+                    <textarea 
+                        id="mobile-notes-textarea" 
+                        placeholder="Escribe tu nota aquí..." 
+                        class="mobile-textarea w-full"
+                        maxlength="500"
+                    ></textarea>
+                    <div class="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <span id="mobile-notes-char-count">0</span>/500
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button id="mobile-notes-cancel" class="mobile-btn flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-700 rounded-xl font-medium">
+                        Cancelar
+                    </button>
+                    <button id="mobile-notes-accept" class="mobile-btn flex-1 px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-medium">
+                        Añadir Nota
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de recordatorios -->
+    <div id="mobile-reminder-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="mobile-modal bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Añadir Recordatorio</h3>
+                <button id="mobile-reminder-close" class="mobile-btn p-2 rounded-lg bg-gray-100 dark:bg-gray-700">
+                    <span>✕</span>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div id="mobile-reminder-warning" class="hidden p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200">No hay tareas disponibles. Primero añade una tarea.</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tarea</label>
+                    <select id="mobile-reminder-task-select" class="mobile-select w-full">
+                        <option value="">Selecciona una tarea...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Frecuencia</label>
+                    <select id="mobile-reminder-frequency" class="mobile-select w-full">
+                        <option value="5sec">Cada 5 segundos</option>
+                        <option value="10sec">Cada 10 segundos</option>
+                        <option value="30sec">Cada 30 segundos</option>
+                        <option value="10min">Cada 10 minutos</option>
+                        <option value="30min">Cada 30 minutos</option>
+                        <option value="1hour">Cada hora</option>
+                        <option value="3hours">Cada 3 horas</option>
+                        <option value="onrestart">Al abrir la aplicación</option>
+                    </select>
+                </div>
+                <div class="flex gap-3">
+                    <button id="mobile-reminder-cancel" class="mobile-btn flex-1 px-4 py-3 bg-gray-200 dark:bg-gray-700 rounded-xl font-medium">
+                        Cancelar
+                    </button>
+                    <button id="mobile-reminder-accept" class="mobile-btn flex-1 px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-xl font-medium">
+                        Recordar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado de conexión -->
+    <div id="network-status" class="hidden fixed top-20 left-4 right-4 z-50 bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 text-center">
+        <span class="network-text text-sm font-medium"></span>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script>
+        // Inicializar la aplicación móvil
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📱 Versión móvil de TaskFlow cargada');
+            
+            // Adaptar IDs para móvil
+            const mobileMappings = {
+                'task-form': 'mobile-task-form',
+                'task-input': 'mobile-task-input',
+                'search-input': 'mobile-search-input',
+                'search-btn': 'mobile-search-btn',
+                'sort-select': 'mobile-sort-select',
+                'tasks-container': 'mobile-tasks-container',
+                'empty-state': 'mobile-empty-state',
+                'theme-toggle': 'mobile-theme-toggle',
+                'theme-icon': 'mobile-theme-icon',
+                'settings-btn': 'mobile-settings-btn',
+                'notes-modal': 'mobile-notes-modal',
+                'notes-close': 'mobile-notes-close',
+                'notes-task-select': 'mobile-notes-task-select',
+                'notes-textarea': 'mobile-notes-textarea',
+                'notes-char-count': 'mobile-notes-char-count',
+                'notes-cancel': 'mobile-notes-cancel',
+                'notes-accept': 'mobile-notes-accept',
+                'reminder-modal': 'mobile-reminder-modal',
+                'reminder-close': 'mobile-reminder-close',
+                'reminder-task-select': 'mobile-reminder-task-select',
+                'reminder-frequency': 'mobile-reminder-frequency',
+                'reminder-warning': 'mobile-reminder-warning',
+                'reminder-cancel': 'mobile-reminder-cancel',
+                'reminder-accept': 'mobile-reminder-accept'
+            };
+            
+            // Mapear botones flotantes
+            document.getElementById('mobile-task-fab').addEventListener('click', function() {
+                document.getElementById('mobile-task-input').focus();
+            });
+            
+            document.getElementById('mobile-reminder-fab').addEventListener('click', function() {
+                if (typeof openReminderModal === 'function') {
+                    openReminderModal();
+                }
+            });
+            
+            // Adaptar filtros para móvil
+            document.querySelectorAll('.mobile-filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Actualizar UI de filtros
+                    document.querySelectorAll('.mobile-filter-btn').forEach(b => {
+                        b.classList.remove('bg-blue-500', 'text-white');
+                        b.classList.add('bg-gray-100', 'dark:bg-gray-700');
+                    });
+                    this.classList.remove('bg-gray-100', 'dark:bg-gray-700');
+                    this.classList.add('bg-blue-500', 'text-white');
+                    
+                    // Aplicar filtro (si existe la función)
+                    if (typeof applyFilter === 'function') {
+                        applyFilter(this.dataset.filter);
+                    }
+                });
+            });
+            
+            // Optimizar scroll para móviles
+            document.body.addEventListener('touchmove', function(e) {
+                if (e.target.closest('.mobile-modal')) {
+                    e.stopPropagation();
+                }
+            }, { passive: true });
+        });
+    </script>
+</body>
+</html>
