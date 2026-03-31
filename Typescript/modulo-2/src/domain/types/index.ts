@@ -30,7 +30,7 @@ interface MatriculaFinalizada {
 // 3. Unión Discriminada estricta
 export type EstadoMatricula = MatriculaActiva | MatriculaSuspendida | MatriculaFinalizada;
 
-// 4. Función con switch para generar reporte
+// 4. Función con switch para generar reporte - Patrón de Análisis Exhaustivo
 export function generarReporte(estado: EstadoMatricula): string {
   switch (estado.tipo) {
     case "ACTIVA":
@@ -40,8 +40,9 @@ export function generarReporte(estado: EstadoMatricula): string {
     case "FINALIZADA":
       return `Matrícula FINALIZADA. La nota media final es: ${estado.notaMedia}.`;
     default:
-      // Esto asegura que hayamos cubierto todos los casos (Exhaustive check)
+      // Patrón de Análisis Exhaustivo con never
+      // Si se añade un nuevo tipo a EstadoMatricula, TypeScript detectará el error aquí
       const _exhaustiveCheck: never = estado;
-      return _exhaustiveCheck;
+      return _exhaustiveCheck; // Esto nunca se ejecutará si todos los casos están cubiertos
   }
 }

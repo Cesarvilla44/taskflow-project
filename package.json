@@ -1,6 +1,7 @@
 {
   "name": "taskflow-project",
   "version": "1.0.2",
+  "type": "module",
   "main": "server/src/index.js",
   "scripts": {
     "dev": "vite",
